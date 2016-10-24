@@ -4,6 +4,7 @@
   "description": "A minimal podcast manager with Electron platform",
   "main": "src/main.js",
   "scripts": {
+    "build":"rimraf ./build/Release/atompod-* && electron-packager . --platform=win32 --arch=x64 --out=./build/Release",
     "start": "electron ."
   },
   "repository": "https://github.com/weliwita/atompod",
@@ -17,6 +18,8 @@
   "author": "rawel",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^1.4.1"
+    "electron": "^1.4.1",
+    "electron-packager": "^8.1.0",
+    "rimraf": "^2.5.4"
   }
 }
