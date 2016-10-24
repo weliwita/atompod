@@ -1,0 +1,22 @@
+{
+  "name": "atompod",
+  "version": "1.0.0",
+  "description": "A minimal podcast manager with Electron platform",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/weliwita/atompod",
+  "keywords": [
+    "Electron",
+    "podcast",
+    "podcatcher",
+    "atompod",
+    "demo"
+  ],
+  "author": "rawel",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^1.4.1"
+  }
+}
