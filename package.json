@@ -2,7 +2,7 @@
   "name": "atompod",
   "version": "1.0.0",
   "description": "A minimal podcast manager with Electron platform",
-  "main": "src/main.js",
+  "main": "src/scripts/main.js",
   "scripts": {
     "build":"rimraf ./build/Release/atompod-* && electron-packager . --platform=win32 --arch=x64 --out=./build/Release",
     "start": "electron ."
