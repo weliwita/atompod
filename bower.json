@@ -1,0 +1,27 @@
+{
+  "name": "atompod",
+  "description": "A minimal podcast manager with Electron platform",
+  "main": "src/scripts/main.js",
+  "authors": [
+    "rawel"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "Electron",
+    "podcast",
+    "podcatcher",
+    "atompod",
+    "demo"
+  ],
+  "homepage": "https://github.com/weliwita/atompod",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.7"
+  }
+}
