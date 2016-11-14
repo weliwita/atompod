@@ -2,7 +2,7 @@
   "name": "atompod",
   "version": "1.0.0",
   "description": "A minimal podcast manager with Electron platform",
-  "main": "src/scripts/main.js",
+  "main": "src/main.js",
   "scripts": {
     "build": "rimraf ./build/Release/atompod-* && electron-packager . --platform=win32 --arch=x64 --out=./build/Release",
     "start": "electron ."
@@ -21,6 +21,7 @@
     "browserify": "^13.1.1",
     "electron": "^1.4.1",
     "electron-packager": "^8.1.0",
+    "electron-reload": "^1.0.3",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.0.0",
