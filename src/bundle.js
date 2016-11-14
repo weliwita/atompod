@@ -30986,8 +30986,8 @@ var Home = React.createClass({displayName: "Home",
 	render: function() {
 		return (
 			React.createElement("div", {className: "jumbotron"}, 
-				React.createElement("h1", null, "Pluralsight Administration"), 
-				React.createElement("p", null, "React, React Router, and Flux for ultra-responsive web apps.")
+				React.createElement("h1", null, "Hi Administration"), 
+				React.createElement("p", null, "this is cool, React Router, and Flux for ultra-responsive web apps.")
 			)
 		);
 	}
