@@ -19,7 +19,7 @@ var config ={
       		'node_modules/bootstrap/dist/css/bootstrap-theme.min.css'
     	],
 		dist:'./src',
-    	//mainJs: './src/main.js'
+    	mainReactJs: './src/scripts/react-main.js'
     }
 }
 
@@ -29,8 +29,18 @@ gulp.task('css', function() {
 		.pipe(gulp.dest(config.paths.dist + '/styles'));
 });
 
+gulp.task('js', function() {
+	browserify(config.paths.mainReactJs)
+		.transform(reactify)
+		.bundle()
+		.on('error', console.error.bind(console))
+		.pipe(source('bundle.js'))
+		.pipe(gulp.dest(config.paths.dist + '/scripts'));
+});
+
+
 gulp.task("run", function () {
     return run('electron .').exec();
 });
 
-gulp.task('default', ['css','run']);
+gulp.task('default', ['css','js','run']);
