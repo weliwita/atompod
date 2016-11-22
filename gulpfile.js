@@ -12,13 +12,14 @@ var lint = require('gulp-eslint'); //Lint JS files, including JSX
 
 var config ={
     paths:{
-        html:'./src/views/**/*.html',
+        html:'./app/views/**/*.html',
 		js: './src/scripts/**/*.js',
 		css: [
       		'node_modules/bootstrap/dist/css/bootstrap.min.css',
-      		'node_modules/bootstrap/dist/css/bootstrap-theme.min.css'
+      		'node_modules/bootstrap/dist/css/bootstrap-theme.min.css',
+			'node_modules/font-awesome/css/font-awesome.min.css'  
     	],
-		dist:'./src',
+		dist:'./app',
     	mainReactJs: './src/scripts/react-main.js'
     }
 }
@@ -26,7 +27,7 @@ var config ={
 gulp.task('css', function() {
 	gulp.src(config.paths.css)
 		.pipe(concat('bundle.css'))
-		.pipe(gulp.dest(config.paths.dist));		
+		.pipe(gulp.dest(config.paths.dist + '/styles'));		
 });
 
 gulp.task('js', function() {
@@ -35,7 +36,12 @@ gulp.task('js', function() {
 		.bundle()
 		.on('error', console.error.bind(console))
 		.pipe(source('bundle.js'))
-		.pipe(gulp.dest(config.paths.dist));		
+		.pipe(gulp.dest(config.paths.dist + '/scripts'));		
+});
+
+gulp.task('copyfonts', function() {
+   gulp.src('node_modules/font-awesome/fonts/**/*.*')
+   .pipe(gulp.dest( config.paths.dist + '/fonts'));
 });
 
 // gulp.task('lint', function() {
@@ -45,7 +51,7 @@ gulp.task('js', function() {
 // });
 
 gulp.task('watch', function() {	
-	gulp.watch(config.paths.html, ['html']);
+	//gulp.watch(config.paths.html, ['html']);
 	gulp.watch(config.paths.js, ['js']);
 });
 
@@ -53,4 +59,4 @@ gulp.task("run", function () {
     return run('electron .').exec();
 });
 
-gulp.task('default', ['css','js','run','watch']);
+gulp.task('default', ['css','copyfonts','js','run','watch']);

@@ -10405,9 +10405,9074 @@ return jQuery;
 },{}],3:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = appendImportantToEachValue;
+
+var _appendPxIfNeeded = require('./append-px-if-needed');
+
+var _appendPxIfNeeded2 = _interopRequireDefault(_appendPxIfNeeded);
+
+var _mapObject = require('./map-object');
+
+var _mapObject2 = _interopRequireDefault(_mapObject);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function appendImportantToEachValue(style) {
+  return (0, _mapObject2.default)(style, function (result, key) {
+    return (0, _appendPxIfNeeded2.default)(key, style[key]) + ' !important';
+  });
+}
+module.exports = exports['default'];
+},{"./append-px-if-needed":4,"./map-object":16}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = appendPxIfNeeded;
+
+
+// Copied from https://github.com/facebook/react/blob/
+// 102cd291899f9942a76c40a0e78920a6fe544dc1/
+// src/renderers/dom/shared/CSSProperty.js
+var isUnitlessNumber = {
+  animationIterationCount: true,
+  boxFlex: true,
+  boxFlexGroup: true,
+  boxOrdinalGroup: true,
+  columnCount: true,
+  flex: true,
+  flexGrow: true,
+  flexPositive: true,
+  flexShrink: true,
+  flexNegative: true,
+  flexOrder: true,
+  gridRow: true,
+  gridColumn: true,
+  fontWeight: true,
+  lineClamp: true,
+  lineHeight: true,
+  opacity: true,
+  order: true,
+  orphans: true,
+  tabSize: true,
+  widows: true,
+  zIndex: true,
+  zoom: true,
+
+  // SVG-related properties
+  fillOpacity: true,
+  stopOpacity: true,
+  strokeDashoffset: true,
+  strokeOpacity: true,
+  strokeWidth: true
+};
+
+function appendPxIfNeeded(propertyName, value) {
+  var needsPxSuffix = !isUnitlessNumber[propertyName] && typeof value === 'number' && value !== 0;
+  return needsPxSuffix ? value + 'px' : value;
+}
+module.exports = exports['default'];
+},{}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+var _camelCaseRegex = /([a-z])?([A-Z])/g;
+
+var _camelCaseReplacer = function _camelCaseReplacer(match, p1, p2) {
+  return (p1 || '') + '-' + p2.toLowerCase();
+};
+
+var _camelCaseToDashCase = function _camelCaseToDashCase(s) {
+  return s.replace(_camelCaseRegex, _camelCaseReplacer);
+};
+
+var camelCasePropsToDashCase = function camelCasePropsToDashCase(prefixedStyle) {
+  // Since prefix is expected to work on inline style objects, we must
+  // translate the keys to dash case for rendering to CSS.
+  return Object.keys(prefixedStyle).reduce(function (result, key) {
+    var dashCaseKey = _camelCaseToDashCase(key);
+
+    // Fix IE vendor prefix
+    if (/^ms-/.test(dashCaseKey)) {
+      dashCaseKey = '-' + dashCaseKey;
+    }
+
+    result[dashCaseKey] = prefixedStyle[key];
+    return result;
+  }, {});
+};
+
+exports.default = camelCasePropsToDashCase;
+module.exports = exports['default'];
+},{}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _enhancer = require('../enhancer');
+
+var _enhancer2 = _interopRequireDefault(_enhancer);
+
+var _styleKeeper = require('../style-keeper');
+
+var _styleKeeper2 = _interopRequireDefault(_styleKeeper);
+
+var _styleSheet = require('./style-sheet');
+
+var _styleSheet2 = _interopRequireDefault(_styleSheet);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _getStyleKeeper(instance) {
+  if (!instance._radiumStyleKeeper) {
+    var userAgent = instance.props.radiumConfig && instance.props.radiumConfig.userAgent || instance.context._radiumConfig && instance.context._radiumConfig.userAgent;
+    instance._radiumStyleKeeper = new _styleKeeper2.default(userAgent);
+  }
+
+  return instance._radiumStyleKeeper;
+}
+
+var StyleRoot = function (_Component) {
+  _inherits(StyleRoot, _Component);
+
+  function StyleRoot() {
+    _classCallCheck(this, StyleRoot);
+
+    var _this = _possibleConstructorReturn(this, _Component.apply(this, arguments));
+
+    _getStyleKeeper(_this);
+    return _this;
+  }
+
+  StyleRoot.prototype.getChildContext = function getChildContext() {
+    return { _radiumStyleKeeper: _getStyleKeeper(this) };
+  };
+
+  StyleRoot.prototype.render = function render() {
+    /* eslint-disable no-unused-vars */
+    // Pass down all props except config to the rendered div.
+    var _props = this.props;
+    var radiumConfig = _props.radiumConfig;
+
+    var otherProps = _objectWithoutProperties(_props, ['radiumConfig']);
+    /* eslint-enable no-unused-vars */
+
+    return _react2.default.createElement(
+      'div',
+      otherProps,
+      this.props.children,
+      _react2.default.createElement(_styleSheet2.default, null)
+    );
+  };
+
+  return StyleRoot;
+}(_react.Component);
+
+StyleRoot.contextTypes = {
+  _radiumConfig: _react.PropTypes.object,
+  _radiumStyleKeeper: _react.PropTypes.instanceOf(_styleKeeper2.default)
+};
+
+StyleRoot.childContextTypes = {
+  _radiumStyleKeeper: _react.PropTypes.instanceOf(_styleKeeper2.default)
+};
+
+StyleRoot = (0, _enhancer2.default)(StyleRoot);
+
+exports.default = StyleRoot;
+module.exports = exports['default'];
+},{"../enhancer":10,"../style-keeper":30,"./style-sheet":7,"react":342}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
+
+var _class, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleKeeper = require('../style-keeper');
+
+var _styleKeeper2 = _interopRequireDefault(_styleKeeper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var StyleSheet = (_temp = _class = function (_Component) {
+  _inherits(StyleSheet, _Component);
+
+  function StyleSheet() {
+    _classCallCheck(this, StyleSheet);
+
+    var _this = _possibleConstructorReturn(this, _Component.apply(this, arguments));
+
+    _this.state = _this._getCSSState();
+
+    _this._onChange = _this._onChange.bind(_this);
+    return _this;
+  }
+
+  StyleSheet.prototype.componentDidMount = function componentDidMount() {
+    this._isMounted = true;
+    this._subscription = this.context._radiumStyleKeeper.subscribe(this._onChange);
+    this._onChange();
+  };
+
+  StyleSheet.prototype.componentWillUnmount = function componentWillUnmount() {
+    this._isMounted = false;
+    if (this._subscription) {
+      this._subscription.remove();
+    }
+  };
+
+  StyleSheet.prototype._getCSSState = function _getCSSState() {
+    return { css: this.context._radiumStyleKeeper.getCSS() };
+  };
+
+  StyleSheet.prototype._onChange = function _onChange() {
+    var _this2 = this;
+
+    setTimeout(function () {
+      _this2._isMounted && _this2.setState(_this2._getCSSState());
+    }, 0);
+  };
+
+  StyleSheet.prototype.render = function render() {
+    return _react2.default.createElement('style', { dangerouslySetInnerHTML: { __html: this.state.css } });
+  };
+
+  return StyleSheet;
+}(_react.Component), _class.contextTypes = {
+  _radiumStyleKeeper: _react2.default.PropTypes.instanceOf(_styleKeeper2.default)
+}, _temp);
+exports.default = StyleSheet;
+module.exports = exports['default'];
+},{"../style-keeper":30,"react":342}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _cssRuleSetToString = require('../css-rule-set-to-string');
+
+var _cssRuleSetToString2 = _interopRequireDefault(_cssRuleSetToString);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Style = _react2.default.createClass({
+  displayName: 'Style',
+
+  propTypes: {
+    radiumConfig: _react.PropTypes.object,
+    rules: _react.PropTypes.object,
+    scopeSelector: _react.PropTypes.string
+  },
+
+  contextTypes: {
+    _radiumConfig: _react.PropTypes.object
+  },
+
+  getDefaultProps: function getDefaultProps() {
+    return {
+      scopeSelector: ''
+    };
+  },
+  _buildStyles: function _buildStyles(styles) {
+    var _this = this;
+
+    var userAgent = this.props.radiumConfig && this.props.radiumConfig.userAgent || this.context && this.context._radiumConfig && this.context._radiumConfig.userAgent;
+
+    var scopeSelector = this.props.scopeSelector;
+
+    var rootRules = Object.keys(styles).reduce(function (accumulator, selector) {
+      if (_typeof(styles[selector]) !== 'object') {
+        accumulator[selector] = styles[selector];
+      }
+
+      return accumulator;
+    }, {});
+    var rootStyles = Object.keys(rootRules).length ? (0, _cssRuleSetToString2.default)(scopeSelector || '', rootRules, userAgent) : '';
+
+    return rootStyles + Object.keys(styles).reduce(function (accumulator, selector) {
+      var rules = styles[selector];
+
+      if (selector === 'mediaQueries') {
+        accumulator += _this._buildMediaQueryString(rules);
+      } else if (_typeof(styles[selector]) === 'object') {
+        var completeSelector = scopeSelector ? selector.split(',').map(function (part) {
+          return scopeSelector + ' ' + part.trim();
+        }).join(',') : selector;
+
+        accumulator += (0, _cssRuleSetToString2.default)(completeSelector, rules, userAgent);
+      }
+
+      return accumulator;
+    }, '');
+  },
+  _buildMediaQueryString: function _buildMediaQueryString(stylesByMediaQuery) {
+    var _this2 = this;
+
+    var mediaQueryString = '';
+
+    Object.keys(stylesByMediaQuery).forEach(function (query) {
+      mediaQueryString += '@media ' + query + '{' + _this2._buildStyles(stylesByMediaQuery[query]) + '}';
+    });
+
+    return mediaQueryString;
+  },
+  render: function render() {
+    if (!this.props.rules) {
+      return null;
+    }
+
+    var styles = this._buildStyles(this.props.rules);
+
+    return _react2.default.createElement('style', { dangerouslySetInnerHTML: { __html: styles } });
+  }
+});
+
+exports.default = Style;
+module.exports = exports['default'];
+},{"../css-rule-set-to-string":9,"react":342}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = cssRuleSetToString;
+
+var _appendPxIfNeeded = require('./append-px-if-needed');
+
+var _appendPxIfNeeded2 = _interopRequireDefault(_appendPxIfNeeded);
+
+var _camelCasePropsToDashCase = require('./camel-case-props-to-dash-case');
+
+var _camelCasePropsToDashCase2 = _interopRequireDefault(_camelCasePropsToDashCase);
+
+var _mapObject = require('./map-object');
+
+var _mapObject2 = _interopRequireDefault(_mapObject);
+
+var _prefixer = require('./prefixer');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createMarkupForStyles(style) {
+  return Object.keys(style).map(function (property) {
+    return property + ': ' + style[property] + ';';
+  }).join('\n');
+}
+
+function cssRuleSetToString(selector, rules, userAgent) {
+  if (!rules) {
+    return '';
+  }
+
+  var rulesWithPx = (0, _mapObject2.default)(rules, function (value, key) {
+    return (0, _appendPxIfNeeded2.default)(key, value);
+  });
+  var prefixedRules = (0, _prefixer.getPrefixedStyle)(rulesWithPx, userAgent);
+  var cssPrefixedRules = (0, _camelCasePropsToDashCase2.default)(prefixedRules);
+  var serializedRules = createMarkupForStyles(cssPrefixedRules);
+
+  return selector + '{' + serializedRules + '}';
+}
+module.exports = exports['default'];
+},{"./append-px-if-needed":4,"./camel-case-props-to-dash-case":5,"./map-object":16,"./prefixer":28}],10:[function(require,module,exports){
+(function (process){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.default = enhanceWithRadium;
+
+var _react = require('react');
+
+var _styleKeeper = require('./style-keeper.js');
+
+var _styleKeeper2 = _interopRequireDefault(_styleKeeper);
+
+var _resolveStyles = require('./resolve-styles.js');
+
+var _resolveStyles2 = _interopRequireDefault(_resolveStyles);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var KEYS_TO_IGNORE_WHEN_COPYING_PROPERTIES = ['arguments', 'callee', 'caller', 'length', 'name', 'prototype', 'type'];
+
+function copyProperties(source, target) {
+  Object.getOwnPropertyNames(source).forEach(function (key) {
+    if (KEYS_TO_IGNORE_WHEN_COPYING_PROPERTIES.indexOf(key) < 0 && !target.hasOwnProperty(key)) {
+      var descriptor = Object.getOwnPropertyDescriptor(source, key);
+      Object.defineProperty(target, key, descriptor);
+    }
+  });
+}
+
+function isStateless(component) {
+  return !component.render && !(component.prototype && component.prototype.render);
+}
+
+function enhanceWithRadium(configOrComposedComponent) {
+  var _class, _temp;
+
+  var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  if (typeof configOrComposedComponent !== 'function') {
+    var _ret = function () {
+      var newConfig = _extends({}, config, configOrComposedComponent);
+      return {
+        v: function v(configOrComponent) {
+          return enhanceWithRadium(configOrComponent, newConfig);
+        }
+      };
+    }();
+
+    if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+  }
+
+  var component = configOrComposedComponent;
+  var ComposedComponent = component;
+
+  // Handle stateless components
+  if (isStateless(ComposedComponent)) {
+    ComposedComponent = function (_Component) {
+      _inherits(ComposedComponent, _Component);
+
+      function ComposedComponent() {
+        _classCallCheck(this, ComposedComponent);
+
+        return _possibleConstructorReturn(this, _Component.apply(this, arguments));
+      }
+
+      ComposedComponent.prototype.render = function render() {
+        return component(this.props, this.context);
+      };
+
+      return ComposedComponent;
+    }(_react.Component);
+    ComposedComponent.displayName = component.displayName || component.name;
+  }
+
+  var RadiumEnhancer = (_temp = _class = function (_ComposedComponent) {
+    _inherits(RadiumEnhancer, _ComposedComponent);
+
+    function RadiumEnhancer() {
+      _classCallCheck(this, RadiumEnhancer);
+
+      var _this2 = _possibleConstructorReturn(this, _ComposedComponent.apply(this, arguments));
+
+      _this2.state = _this2.state || {};
+      _this2.state._radiumStyleState = {};
+      _this2._radiumIsMounted = true;
+      return _this2;
+    }
+
+    RadiumEnhancer.prototype.componentWillUnmount = function componentWillUnmount() {
+      if (_ComposedComponent.prototype.componentWillUnmount) {
+        _ComposedComponent.prototype.componentWillUnmount.call(this);
+      }
+
+      this._radiumIsMounted = false;
+
+      if (this._radiumMouseUpListener) {
+        this._radiumMouseUpListener.remove();
+      }
+
+      if (this._radiumMediaQueryListenersByQuery) {
+        Object.keys(this._radiumMediaQueryListenersByQuery).forEach(function (query) {
+          this._radiumMediaQueryListenersByQuery[query].remove();
+        }, this);
+      }
+    };
+
+    RadiumEnhancer.prototype.getChildContext = function getChildContext() {
+      var superChildContext = _ComposedComponent.prototype.getChildContext ? _ComposedComponent.prototype.getChildContext.call(this) : {};
+
+      if (!this.props.radiumConfig) {
+        return superChildContext;
+      }
+
+      var newContext = _extends({}, superChildContext);
+
+      if (this.props.radiumConfig) {
+        newContext._radiumConfig = this.props.radiumConfig;
+      }
+
+      return newContext;
+    };
+
+    RadiumEnhancer.prototype.render = function render() {
+      var renderedElement = _ComposedComponent.prototype.render.call(this);
+      var currentConfig = this.props.radiumConfig || this.context._radiumConfig || config;
+
+      if (config && currentConfig !== config) {
+        currentConfig = _extends({}, config, currentConfig);
+      }
+
+      return (0, _resolveStyles2.default)(this, renderedElement, currentConfig);
+    };
+
+    return RadiumEnhancer;
+  }(ComposedComponent), _class._isRadiumEnhanced = true, _temp);
+
+  // Class inheritance uses Object.create and because of __proto__ issues
+  // with IE <10 any static properties of the superclass aren't inherited and
+  // so need to be manually populated.
+  // See http://babeljs.io/docs/advanced/caveats/#classes-10-and-below-
+
+  copyProperties(component, RadiumEnhancer);
+
+  if (process.env.NODE_ENV !== 'production') {
+    // This also fixes React Hot Loader by exposing the original components top
+    // level prototype methods on the Radium enhanced prototype as discussed in
+    // https://github.com/FormidableLabs/radium/issues/219.
+    copyProperties(ComposedComponent.prototype, RadiumEnhancer.prototype);
+  }
+
+  if (RadiumEnhancer.propTypes && RadiumEnhancer.propTypes.style) {
+    RadiumEnhancer.propTypes = _extends({}, RadiumEnhancer.propTypes, {
+      style: _react.PropTypes.oneOfType([_react.PropTypes.array, _react.PropTypes.object])
+    });
+  }
+
+  RadiumEnhancer.displayName = component.displayName || component.name || 'Component';
+
+  RadiumEnhancer.contextTypes = _extends({}, RadiumEnhancer.contextTypes, {
+    _radiumConfig: _react.PropTypes.object,
+    _radiumStyleKeeper: _react.PropTypes.instanceOf(_styleKeeper2.default)
+  });
+
+  RadiumEnhancer.childContextTypes = _extends({}, RadiumEnhancer.childContextTypes, {
+    _radiumConfig: _react.PropTypes.object,
+    _radiumStyleKeeper: _react.PropTypes.instanceOf(_styleKeeper2.default)
+  });
+
+  return RadiumEnhancer;
+}
+module.exports = exports['default'];
+}).call(this,require('_process'))
+},{"./resolve-styles.js":29,"./style-keeper.js":30,"_process":1,"react":342}],11:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+var getStateKey = function getStateKey(elementKey) {
+  return elementKey === null || elementKey === undefined ? 'main' : elementKey.toString();
+};
+
+exports.default = getStateKey;
+module.exports = exports['default'];
+},{}],12:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _getStateKey = require('./get-state-key');
+
+var _getStateKey2 = _interopRequireDefault(_getStateKey);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var getState = function getState(state, elementKey, value) {
+  var key = (0, _getStateKey2.default)(elementKey);
+
+  return !!state && !!state._radiumStyleState && !!state._radiumStyleState[key] && state._radiumStyleState[key][value];
+};
+
+exports.default = getState;
+module.exports = exports['default'];
+},{"./get-state-key":11}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = hash;
+
+
+// a simple djb2 hash based on hash-string:
+// https://github.com/MatthewBarker/hash-string/blob/master/source/hash-string.js
+// returns a hex-encoded hash
+function hash(text) {
+  if (!text) {
+    return '';
+  }
+
+  var hashValue = 5381;
+  var index = text.length - 1;
+
+  while (index) {
+    hashValue = hashValue * 33 ^ text.charCodeAt(index);
+    index -= 1;
+  }
+
+  return (hashValue >>> 0).toString(16);
+}
+module.exports = exports['default'];
+},{}],14:[function(require,module,exports){
+(function (process){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _enhancer = require('./enhancer');
+
+var _enhancer2 = _interopRequireDefault(_enhancer);
+
+var _plugins = require('./plugins');
+
+var _plugins2 = _interopRequireDefault(_plugins);
+
+var _style = require('./components/style');
+
+var _style2 = _interopRequireDefault(_style);
+
+var _styleRoot = require('./components/style-root');
+
+var _styleRoot2 = _interopRequireDefault(_styleRoot);
+
+var _getState = require('./get-state');
+
+var _getState2 = _interopRequireDefault(_getState);
+
+var _keyframes = require('./keyframes');
+
+var _keyframes2 = _interopRequireDefault(_keyframes);
+
+var _resolveStyles = require('./resolve-styles');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function Radium(ComposedComponent) {
+  return (0, _enhancer2.default)(ComposedComponent);
+}
+
+Radium.Plugins = _plugins2.default;
+Radium.Style = _style2.default;
+Radium.StyleRoot = _styleRoot2.default;
+Radium.getState = _getState2.default;
+Radium.keyframes = _keyframes2.default;
+
+if (process.env.NODE_ENV !== 'production') {
+  Radium.TestMode = {
+    clearState: _resolveStyles.__clearStateForTests,
+    disable: _resolveStyles.__setTestMode.bind(null, false),
+    enable: _resolveStyles.__setTestMode.bind(null, true)
+  };
+}
+
+exports.default = Radium;
+module.exports = exports['default'];
+}).call(this,require('_process'))
+},{"./components/style":8,"./components/style-root":6,"./enhancer":10,"./get-state":12,"./keyframes":15,"./plugins":19,"./resolve-styles":29,"_process":1}],15:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = keyframes;
+
+var _cssRuleSetToString = require('./css-rule-set-to-string');
+
+var _cssRuleSetToString2 = _interopRequireDefault(_cssRuleSetToString);
+
+var _hash = require('./hash');
+
+var _hash2 = _interopRequireDefault(_hash);
+
+var _prefixer = require('./prefixer');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function keyframes(keyframeRules, name) {
+  return {
+    __radiumKeyframes: true,
+    __process: function __process(userAgent) {
+      var keyframesPrefixed = (0, _prefixer.getPrefixedKeyframes)(userAgent);
+      var rules = Object.keys(keyframeRules).map(function (percentage) {
+        return (0, _cssRuleSetToString2.default)(percentage, keyframeRules[percentage], userAgent);
+      }).join('\n');
+      var animationName = (name ? name + '-' : '') + 'radium-animation-' + (0, _hash2.default)(rules);
+      var css = '@' + keyframesPrefixed + ' ' + animationName + ' {\n' + rules + '\n}\n';
+      return { css: css, animationName: animationName };
+    }
+  };
+}
+module.exports = exports['default'];
+},{"./css-rule-set-to-string":9,"./hash":13,"./prefixer":28}],16:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = mapObject;
+function mapObject(object, mapper) {
+  return Object.keys(object).reduce(function (result, key) {
+    result[key] = mapper(object[key], key);
+    return result;
+  }, {});
+}
+module.exports = exports["default"];
+},{}],17:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+exports.isNestedStyle = isNestedStyle;
+exports.mergeStyles = mergeStyles;
+function isNestedStyle(value) {
+  // Don't merge objects overriding toString, since they should be converted
+  // to string values.
+  return value && value.constructor === Object && value.toString === Object.prototype.toString;
+}
+
+// Merge style objects. Deep merge plain object values.
+function mergeStyles(styles) {
+  var result = {};
+
+  styles.forEach(function (style) {
+    if (!style || (typeof style === 'undefined' ? 'undefined' : _typeof(style)) !== 'object') {
+      return;
+    }
+
+    if (Array.isArray(style)) {
+      style = mergeStyles(style);
+    }
+
+    Object.keys(style).forEach(function (key) {
+      // Simple case, nothing nested
+      if (!isNestedStyle(style[key]) || !isNestedStyle(result[key])) {
+        result[key] = style[key];
+        return;
+      }
+
+      // If nested media, don't merge the nested styles, append a space to the
+      // end (benign when converted to CSS). This way we don't end up merging
+      // media queries that appear later in the chain with those that appear
+      // earlier.
+      if (key.indexOf('@media') === 0) {
+        var newKey = key;
+        while (true) {
+          // eslint-disable-line no-constant-condition
+          newKey += ' ';
+          if (!result[newKey]) {
+            result[newKey] = style[key];
+            return;
+          }
+        }
+      }
+
+      // Merge all other nested styles recursively
+      result[key] = mergeStyles([result[key], style[key]]);
+    });
+  });
+
+  return result;
+}
+},{}],18:[function(require,module,exports){
+(function (process){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _checkProps = function checkProps() {};
+
+if (process.env.NODE_ENV !== 'production') {
+  (function () {
+    // Warn if you use longhand and shorthand properties in the same style
+    // object.
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/Shorthand_properties
+
+    var shorthandPropertyExpansions = {
+      'background': ['backgroundAttachment', 'backgroundBlendMode', 'backgroundClip', 'backgroundColor', 'backgroundImage', 'backgroundOrigin', 'backgroundPosition', 'backgroundPositionX', 'backgroundPositionY', 'backgroundRepeat', 'backgroundRepeatX', 'backgroundRepeatY', 'backgroundSize'],
+      'border': ['borderBottom', 'borderBottomColor', 'borderBottomStyle', 'borderBottomWidth', 'borderColor', 'borderLeft', 'borderLeftColor', 'borderLeftStyle', 'borderLeftWidth', 'borderRight', 'borderRightColor', 'borderRightStyle', 'borderRightWidth', 'borderStyle', 'borderTop', 'borderTopColor', 'borderTopStyle', 'borderTopWidth', 'borderWidth'],
+      'borderImage': ['borderImageOutset', 'borderImageRepeat', 'borderImageSlice', 'borderImageSource', 'borderImageWidth'],
+      'borderRadius': ['borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopLeftRadius', 'borderTopRightRadius'],
+      'font': ['fontFamily', 'fontKerning', 'fontSize', 'fontStretch', 'fontStyle', 'fontVariant', 'fontVariantLigatures', 'fontWeight', 'lineHeight'],
+      'listStyle': ['listStyleImage', 'listStylePosition', 'listStyleType'],
+      'margin': ['marginBottom', 'marginLeft', 'marginRight', 'marginTop'],
+      'padding': ['paddingBottom', 'paddingLeft', 'paddingRight', 'paddingTop'],
+      'transition': ['transitionDelay', 'transitionDuration', 'transitionProperty', 'transitionTimingFunction']
+    };
+
+    _checkProps = function checkProps(config) {
+      var componentName = config.componentName;
+      var style = config.style;
+
+      if ((typeof style === 'undefined' ? 'undefined' : _typeof(style)) !== 'object' || !style) {
+        return;
+      }
+
+      var styleKeys = Object.keys(style);
+      styleKeys.forEach(function (styleKey) {
+        if (Array.isArray(shorthandPropertyExpansions[styleKey]) && shorthandPropertyExpansions[styleKey].some(function (sp) {
+          return styleKeys.indexOf(sp) !== -1;
+        })) {
+          if (process.env.NODE_ENV !== 'production') {
+            /* eslint-disable no-console */
+            console.warn('Radium: property "' + styleKey + '" in style object', style, ': do not mix longhand and ' + 'shorthand properties in the same style object. Check the render ' + 'method of ' + componentName + '.', 'See https://github.com/FormidableLabs/radium/issues/95 for more ' + 'information.');
+            /* eslint-enable no-console */
+          }
+        }
+      });
+
+      styleKeys.forEach(function (k) {
+        return _checkProps(_extends({}, config, { style: style[k] }));
+      });
+      return;
+    };
+  })();
+}
+
+exports.default = _checkProps;
+module.exports = exports['default'];
+}).call(this,require('_process'))
+},{"_process":1}],19:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _checkPropsPlugin = require('./check-props-plugin');
+
+var _checkPropsPlugin2 = _interopRequireDefault(_checkPropsPlugin);
+
+var _keyframesPlugin = require('./keyframes-plugin');
+
+var _keyframesPlugin2 = _interopRequireDefault(_keyframesPlugin);
+
+var _mergeStyleArrayPlugin = require('./merge-style-array-plugin');
+
+var _mergeStyleArrayPlugin2 = _interopRequireDefault(_mergeStyleArrayPlugin);
+
+var _prefixPlugin = require('./prefix-plugin');
+
+var _prefixPlugin2 = _interopRequireDefault(_prefixPlugin);
+
+var _removeNestedStylesPlugin = require('./remove-nested-styles-plugin');
+
+var _removeNestedStylesPlugin2 = _interopRequireDefault(_removeNestedStylesPlugin);
+
+var _resolveInteractionStylesPlugin = require('./resolve-interaction-styles-plugin');
+
+var _resolveInteractionStylesPlugin2 = _interopRequireDefault(_resolveInteractionStylesPlugin);
+
+var _resolveMediaQueriesPlugin = require('./resolve-media-queries-plugin');
+
+var _resolveMediaQueriesPlugin2 = _interopRequireDefault(_resolveMediaQueriesPlugin);
+
+var _visitedPlugin = require('./visited-plugin');
+
+var _visitedPlugin2 = _interopRequireDefault(_visitedPlugin);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  checkProps: _checkPropsPlugin2.default,
+  keyframes: _keyframesPlugin2.default,
+  mergeStyleArray: _mergeStyleArrayPlugin2.default,
+  prefix: _prefixPlugin2.default,
+  removeNestedStyles: _removeNestedStylesPlugin2.default,
+  resolveInteractionStyles: _resolveInteractionStylesPlugin2.default,
+  resolveMediaQueries: _resolveMediaQueriesPlugin2.default,
+  visited: _visitedPlugin2.default
+};
+/* eslint-disable block-scoped-const */
+
+module.exports = exports['default'];
+},{"./check-props-plugin":18,"./keyframes-plugin":20,"./merge-style-array-plugin":21,"./prefix-plugin":23,"./remove-nested-styles-plugin":24,"./resolve-interaction-styles-plugin":25,"./resolve-media-queries-plugin":26,"./visited-plugin":27}],20:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = keyframesPlugin;
+function keyframesPlugin(_ref // eslint-disable-line no-shadow
+) {
+  var addCSS = _ref.addCSS;
+  var config = _ref.config;
+  var style = _ref.style;
+
+  var newStyle = Object.keys(style).reduce(function (newStyleInProgress, key) {
+    var value = style[key];
+    if (key === 'animationName' && value && value.__radiumKeyframes) {
+      var keyframesValue = value;
+
+      var _keyframesValue$__pro = keyframesValue.__process(config.userAgent);
+
+      var animationName = _keyframesValue$__pro.animationName;
+      var css = _keyframesValue$__pro.css;
+
+      addCSS(css);
+      value = animationName;
+    }
+
+    newStyleInProgress[key] = value;
+    return newStyleInProgress;
+  }, {});
+  return { style: newStyle };
+}
+module.exports = exports['default'];
+},{}],21:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+// Convenient syntax for multiple styles: `style={[style1, style2, etc]}`
+// Ignores non-objects, so you can do `this.state.isCool && styles.cool`.
+var mergeStyleArrayPlugin = function mergeStyleArrayPlugin(_ref) {
+  var style = _ref.style;
+  var mergeStyles = _ref.mergeStyles;
+  // eslint-disable-line no-shadow
+  var newStyle = Array.isArray(style) ? mergeStyles(style) : style;
+  return { style: newStyle };
+};
+
+exports.default = mergeStyleArrayPlugin;
+module.exports = exports['default'];
+},{}],22:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+var _callbacks = [];
+var _mouseUpListenerIsActive = false;
+
+function _handleMouseUp() {
+  _callbacks.forEach(function (callback) {
+    callback();
+  });
+}
+
+var subscribe = function subscribe(callback) {
+  if (_callbacks.indexOf(callback) === -1) {
+    _callbacks.push(callback);
+  }
+
+  if (!_mouseUpListenerIsActive) {
+    window.addEventListener('mouseup', _handleMouseUp);
+    _mouseUpListenerIsActive = true;
+  }
+
+  return {
+    remove: function remove() {
+      var index = _callbacks.indexOf(callback);
+      _callbacks.splice(index, 1);
+
+      if (_callbacks.length === 0 && _mouseUpListenerIsActive) {
+        window.removeEventListener('mouseup', _handleMouseUp);
+        _mouseUpListenerIsActive = false;
+      }
+    }
+  };
+};
+
+exports.default = {
+  subscribe: subscribe,
+  __triggerForTests: _handleMouseUp
+};
+module.exports = exports['default'];
+},{}],23:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = prefixPlugin;
+
+var _prefixer = require('../prefixer');
+
+function prefixPlugin(_ref // eslint-disable-line no-shadow
+) {
+  var config = _ref.config;
+  var style = _ref.style;
+
+  var newStyle = (0, _prefixer.getPrefixedStyle)(style, config.userAgent);
+  return { style: newStyle };
+}
+module.exports = exports['default'];
+},{"../prefixer":28}],24:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = removeNestedStyles;
+function removeNestedStyles(_ref) {
+  var isNestedStyle = _ref.isNestedStyle;
+  var style = _ref.style;
+  // eslint-disable-line no-shadow
+  var newStyle = Object.keys(style).reduce(function (newStyleInProgress, key) {
+    var value = style[key];
+    if (!isNestedStyle(value)) {
+      newStyleInProgress[key] = value;
+    }
+    return newStyleInProgress;
+  }, {});
+
+  return {
+    style: newStyle
+  };
+}
+module.exports = exports['default'];
+},{}],25:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _mouseUpListener = require('./mouse-up-listener');
+
+var _mouseUpListener2 = _interopRequireDefault(_mouseUpListener);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _isInteractiveStyleField = function _isInteractiveStyleField(styleFieldName) {
+  return styleFieldName === ':hover' || styleFieldName === ':active' || styleFieldName === ':focus';
+};
+
+var resolveInteractionStyles = function resolveInteractionStyles(config) {
+  var ExecutionEnvironment = config.ExecutionEnvironment;
+  var getComponentField = config.getComponentField;
+  var getState = config.getState;
+  var mergeStyles = config.mergeStyles;
+  var props = config.props;
+  var setState = config.setState;
+  var style = config.style;
+
+
+  var newComponentFields = {};
+  var newProps = {};
+
+  // Only add handlers if necessary
+  if (style[':hover']) {
+    (function () {
+      // Always call the existing handler if one is already defined.
+      // This code, and the very similar ones below, could be abstracted a bit
+      // more, but it hurts readability IMO.
+      var existingOnMouseEnter = props.onMouseEnter;
+      newProps.onMouseEnter = function (e) {
+        existingOnMouseEnter && existingOnMouseEnter(e);
+        setState(':hover', true);
+      };
+
+      var existingOnMouseLeave = props.onMouseLeave;
+      newProps.onMouseLeave = function (e) {
+        existingOnMouseLeave && existingOnMouseLeave(e);
+        setState(':hover', false);
+      };
+    })();
+  }
+
+  if (style[':active']) {
+    (function () {
+      var existingOnMouseDown = props.onMouseDown;
+      newProps.onMouseDown = function (e) {
+        existingOnMouseDown && existingOnMouseDown(e);
+        newComponentFields._lastMouseDown = Date.now();
+        setState(':active', 'viamousedown');
+      };
+
+      var existingOnKeyDown = props.onKeyDown;
+      newProps.onKeyDown = function (e) {
+        existingOnKeyDown && existingOnKeyDown(e);
+        if (e.key === ' ' || e.key === 'Enter') {
+          setState(':active', 'viakeydown');
+        }
+      };
+
+      var existingOnKeyUp = props.onKeyUp;
+      newProps.onKeyUp = function (e) {
+        existingOnKeyUp && existingOnKeyUp(e);
+        if (e.key === ' ' || e.key === 'Enter') {
+          setState(':active', false);
+        }
+      };
+    })();
+  }
+
+  if (style[':focus']) {
+    (function () {
+      var existingOnFocus = props.onFocus;
+      newProps.onFocus = function (e) {
+        existingOnFocus && existingOnFocus(e);
+        setState(':focus', true);
+      };
+
+      var existingOnBlur = props.onBlur;
+      newProps.onBlur = function (e) {
+        existingOnBlur && existingOnBlur(e);
+        setState(':focus', false);
+      };
+    })();
+  }
+
+  if (style[':active'] && !getComponentField('_radiumMouseUpListener') && ExecutionEnvironment.canUseEventListeners) {
+    newComponentFields._radiumMouseUpListener = _mouseUpListener2.default.subscribe(function () {
+      Object.keys(getComponentField('state')._radiumStyleState).forEach(function (key) {
+        if (getState(':active', key) === 'viamousedown') {
+          setState(':active', false, key);
+        }
+      });
+    });
+  }
+
+  // Merge the styles in the order they were defined
+  var interactionStyles = props.disabled ? [style[':disabled']] : Object.keys(style).filter(function (name) {
+    return _isInteractiveStyleField(name) && getState(name);
+  }).map(function (name) {
+    return style[name];
+  });
+
+  var newStyle = mergeStyles([style].concat(interactionStyles));
+
+  // Remove interactive styles
+  newStyle = Object.keys(newStyle).reduce(function (styleWithoutInteractions, name) {
+    if (!_isInteractiveStyleField(name) && name !== ':disabled') {
+      styleWithoutInteractions[name] = newStyle[name];
+    }
+    return styleWithoutInteractions;
+  }, {});
+
+  return {
+    componentFields: newComponentFields,
+    props: newProps,
+    style: newStyle
+  };
+};
+
+exports.default = resolveInteractionStyles;
+module.exports = exports['default'];
+},{"./mouse-up-listener":22}],26:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.default = resolveMediaQueries;
+
+
+var _windowMatchMedia = void 0;
+function _getWindowMatchMedia(ExecutionEnvironment) {
+  if (_windowMatchMedia === undefined) {
+    _windowMatchMedia = !!ExecutionEnvironment.canUseDOM && !!window && !!window.matchMedia && function (mediaQueryString) {
+      return window.matchMedia(mediaQueryString);
+    } || null;
+  }
+  return _windowMatchMedia;
+}
+
+function _filterObject(obj, predicate) {
+  return Object.keys(obj).filter(function (key) {
+    return predicate(obj[key], key);
+  }).reduce(function (result, key) {
+    result[key] = obj[key];
+    return result;
+  }, {});
+}
+
+function _removeMediaQueries(style) {
+  return Object.keys(style).reduce(function (styleWithoutMedia, key) {
+    if (key.indexOf('@media') !== 0) {
+      styleWithoutMedia[key] = style[key];
+    }
+    return styleWithoutMedia;
+  }, {});
+}
+
+function _topLevelRulesToCSS(_ref) {
+  var addCSS = _ref.addCSS;
+  var appendImportantToEachValue = _ref.appendImportantToEachValue;
+  var cssRuleSetToString = _ref.cssRuleSetToString;
+  var hash = _ref.hash;
+  var isNestedStyle = _ref.isNestedStyle;
+  var style = _ref.style;
+  var userAgent = _ref.userAgent;
+
+  var className = '';
+  Object.keys(style).filter(function (name) {
+    return name.indexOf('@media') === 0;
+  }).map(function (query) {
+    var topLevelRules = appendImportantToEachValue(_filterObject(style[query], function (value) {
+      return !isNestedStyle(value);
+    }));
+
+    if (!Object.keys(topLevelRules).length) {
+      return;
+    }
+
+    var ruleCSS = cssRuleSetToString('', topLevelRules, userAgent);
+
+    // CSS classes cannot start with a number
+    var mediaQueryClassName = 'rmq-' + hash(query + ruleCSS);
+    var css = query + '{ .' + mediaQueryClassName + ruleCSS + '}';
+
+    addCSS(css);
+
+    className += (className ? ' ' : '') + mediaQueryClassName;
+  });
+  return className;
+}
+
+function _subscribeToMediaQuery(_ref2) {
+  var listener = _ref2.listener;
+  var listenersByQuery = _ref2.listenersByQuery;
+  var matchMedia = _ref2.matchMedia;
+  var mediaQueryListsByQuery = _ref2.mediaQueryListsByQuery;
+  var query = _ref2.query;
+
+  query = query.replace('@media ', '');
+
+  var mql = mediaQueryListsByQuery[query];
+  if (!mql && matchMedia) {
+    mediaQueryListsByQuery[query] = mql = matchMedia(query);
+  }
+
+  if (!listenersByQuery || !listenersByQuery[query]) {
+    mql.addListener(listener);
+
+    listenersByQuery[query] = {
+      remove: function remove() {
+        mql.removeListener(listener);
+      }
+    };
+  }
+  return mql;
+}
+
+function resolveMediaQueries(_ref3) {
+  var ExecutionEnvironment = _ref3.ExecutionEnvironment;
+  var addCSS = _ref3.addCSS;
+  var appendImportantToEachValue = _ref3.appendImportantToEachValue;
+  var config = _ref3.config;
+  var cssRuleSetToString = _ref3.cssRuleSetToString;
+  var getComponentField = _ref3.getComponentField;
+  var getGlobalState = _ref3.getGlobalState;
+  var hash = _ref3.hash;
+  var isNestedStyle = _ref3.isNestedStyle;
+  var mergeStyles = _ref3.mergeStyles;
+  var props = _ref3.props;
+  var setState = _ref3.setState;
+  var style = _ref3.style;
+  // eslint-disable-line no-shadow
+  var newStyle = _removeMediaQueries(style);
+  var mediaQueryClassNames = _topLevelRulesToCSS({
+    addCSS: addCSS,
+    appendImportantToEachValue: appendImportantToEachValue,
+    cssRuleSetToString: cssRuleSetToString,
+    hash: hash,
+    isNestedStyle: isNestedStyle,
+    style: style,
+    userAgent: config.userAgent
+  });
+
+  var newProps = mediaQueryClassNames ? {
+    className: mediaQueryClassNames + (props.className ? ' ' + props.className : '')
+  } : null;
+
+  var matchMedia = config.matchMedia || _getWindowMatchMedia(ExecutionEnvironment);
+
+  if (!matchMedia) {
+    return {
+      props: newProps,
+      style: newStyle
+    };
+  }
+
+  var listenersByQuery = _extends({}, getComponentField('_radiumMediaQueryListenersByQuery'));
+  var mediaQueryListsByQuery = getGlobalState('mediaQueryListsByQuery') || {};
+
+  Object.keys(style).filter(function (name) {
+    return name.indexOf('@media') === 0;
+  }).map(function (query) {
+    var nestedRules = _filterObject(style[query], isNestedStyle);
+
+    if (!Object.keys(nestedRules).length) {
+      return;
+    }
+
+    var mql = _subscribeToMediaQuery({
+      listener: function listener() {
+        return setState(query, mql.matches, '_all');
+      },
+      listenersByQuery: listenersByQuery,
+      matchMedia: matchMedia,
+      mediaQueryListsByQuery: mediaQueryListsByQuery,
+      query: query
+    });
+
+    // Apply media query states
+    if (mql.matches) {
+      newStyle = mergeStyles([newStyle, nestedRules]);
+    }
+  });
+
+  return {
+    componentFields: {
+      _radiumMediaQueryListenersByQuery: listenersByQuery
+    },
+    globalState: { mediaQueryListsByQuery: mediaQueryListsByQuery },
+    props: newProps,
+    style: newStyle
+  };
+}
+module.exports = exports['default'];
+},{}],27:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = visited;
+function visited(_ref) {
+  var addCSS = _ref.addCSS;
+  var appendImportantToEachValue = _ref.appendImportantToEachValue;
+  var config = _ref.config;
+  var cssRuleSetToString = _ref.cssRuleSetToString;
+  var hash = _ref.hash;
+  var props = _ref.props;
+  var style = _ref.style;
+  // eslint-disable-line no-shadow
+  var className = props.className;
+
+  var newStyle = Object.keys(style).reduce(function (newStyleInProgress, key) {
+    var value = style[key];
+    if (key === ':visited') {
+      value = appendImportantToEachValue(value);
+      var ruleCSS = cssRuleSetToString('', value, config.userAgent);
+      var visitedClassName = 'rad-' + hash(ruleCSS);
+      var css = '.' + visitedClassName + ':visited' + ruleCSS;
+
+      addCSS(css);
+      className = (className ? className + ' ' : '') + visitedClassName;
+    } else {
+      newStyleInProgress[key] = value;
+    }
+
+    return newStyleInProgress;
+  }, {});
+
+  return {
+    props: className === props.className ? null : { className: className },
+    style: newStyle
+  };
+}
+module.exports = exports['default'];
+},{}],28:[function(require,module,exports){
+(function (process,global){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                   * Based on https://github.com/jsstyles/css-vendor, but without having to
+                                                                                                                                                                                                                                                   * convert between different cases all the time.
+                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                   * 
+                                                                                                                                                                                                                                                   */
+
+exports.getPrefixedKeyframes = getPrefixedKeyframes;
+exports.getPrefixedStyle = getPrefixedStyle;
+
+var _inlineStylePrefixer = require('inline-style-prefixer');
+
+var _inlineStylePrefixer2 = _interopRequireDefault(_inlineStylePrefixer);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function transformValues(style) {
+  return Object.keys(style).reduce(function (newStyle, key) {
+    var value = style[key];
+    if (Array.isArray(value)) {
+      value = value.join(';' + key + ':');
+    } else if (value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && typeof value.toString === 'function') {
+      value = value.toString();
+    }
+
+    newStyle[key] = value;
+    return newStyle;
+  }, {});
+}
+
+var _hasWarnedAboutUserAgent = false;
+var _lastUserAgent = void 0;
+var _cachedPrefixer = void 0;
+
+function getPrefixer(userAgent) {
+  var actualUserAgent = userAgent || global && global.navigator && global.navigator.userAgent;
+
+  if (process.env.NODE_ENV !== 'production') {
+    if (!actualUserAgent && !_hasWarnedAboutUserAgent) {
+      /* eslint-disable no-console */
+      console.warn('Radium: userAgent should be supplied for server-side rendering. See ' + 'https://github.com/FormidableLabs/radium/tree/master/docs/api#radium ' + 'for more information.');
+      /* eslint-enable no-console */
+      _hasWarnedAboutUserAgent = true;
+    }
+  }
+
+  if (!_cachedPrefixer || actualUserAgent !== _lastUserAgent) {
+    if (actualUserAgent === 'all') {
+      _cachedPrefixer = {
+        prefix: _inlineStylePrefixer2.default.prefixAll,
+        prefixedKeyframes: 'keyframes'
+      };
+    } else {
+      _cachedPrefixer = new _inlineStylePrefixer2.default({ userAgent: actualUserAgent });
+    }
+    _lastUserAgent = actualUserAgent;
+  }
+  return _cachedPrefixer;
+}
+
+function getPrefixedKeyframes(userAgent) {
+  return getPrefixer(userAgent).prefixedKeyframes;
+}
+
+// Returns a new style object with vendor prefixes added to property names
+// and values.
+function getPrefixedStyle(style, userAgent) {
+  var styleWithFallbacks = transformValues(style);
+  var prefixer = getPrefixer(userAgent);
+  var prefixedStyle = prefixer.prefix(styleWithFallbacks);
+  return prefixedStyle;
+}
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":1,"inline-style-prefixer":32}],29:[function(require,module,exports){
+(function (process){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _appendImportantToEachValue = require('./append-important-to-each-value');
+
+var _appendImportantToEachValue2 = _interopRequireDefault(_appendImportantToEachValue);
+
+var _cssRuleSetToString = require('./css-rule-set-to-string');
+
+var _cssRuleSetToString2 = _interopRequireDefault(_cssRuleSetToString);
+
+var _getState = require('./get-state');
+
+var _getState2 = _interopRequireDefault(_getState);
+
+var _getStateKey = require('./get-state-key');
+
+var _getStateKey2 = _interopRequireDefault(_getStateKey);
+
+var _hash = require('./hash');
+
+var _hash2 = _interopRequireDefault(_hash);
+
+var _mergeStyles = require('./merge-styles');
+
+var _plugins = require('./plugins/');
+
+var _plugins2 = _interopRequireDefault(_plugins);
+
+var _exenv = require('exenv');
+
+var _exenv2 = _interopRequireDefault(_exenv);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var DEFAULT_CONFIG = {
+  plugins: [_plugins2.default.mergeStyleArray, _plugins2.default.checkProps, _plugins2.default.resolveMediaQueries, _plugins2.default.resolveInteractionStyles, _plugins2.default.keyframes, _plugins2.default.visited, _plugins2.default.removeNestedStyles, _plugins2.default.prefix, _plugins2.default.checkProps]
+};
+
+// Gross
+var globalState = {};
+
+// Declare early for recursive helpers.
+var resolveStyles = null;
+
+var _shouldResolveStyles = function _shouldResolveStyles(component) {
+  return component.type && !component.type._isRadiumEnhanced;
+};
+
+var _resolveChildren = function _resolveChildren(_ref) {
+  var children = _ref.children;
+  var component = _ref.component;
+  var config = _ref.config;
+  var existingKeyMap = _ref.existingKeyMap;
+
+  if (!children) {
+    return children;
+  }
+
+  var childrenType = typeof children === 'undefined' ? 'undefined' : _typeof(children);
+
+  if (childrenType === 'string' || childrenType === 'number') {
+    // Don't do anything with a single primitive child
+    return children;
+  }
+
+  if (childrenType === 'function') {
+    // Wrap the function, resolving styles on the result
+    return function () {
+      var result = children.apply(this, arguments);
+      if (_react2.default.isValidElement(result)) {
+        return resolveStyles(component, result, config, existingKeyMap, true);
+      }
+      return result;
+    };
+  }
+
+  if (_react2.default.Children.count(children) === 1 && children.type) {
+    // If a React Element is an only child, don't wrap it in an array for
+    // React.Children.map() for React.Children.only() compatibility.
+    var onlyChild = _react2.default.Children.only(children);
+    return resolveStyles(component, onlyChild, config, existingKeyMap, true);
+  }
+
+  return _react2.default.Children.map(children, function (child) {
+    if (_react2.default.isValidElement(child)) {
+      return resolveStyles(component, child, config, existingKeyMap, true);
+    }
+
+    return child;
+  });
+};
+
+// Recurse over props, just like children
+var _resolveProps = function _resolveProps(_ref2) {
+  var component = _ref2.component;
+  var config = _ref2.config;
+  var existingKeyMap = _ref2.existingKeyMap;
+  var props = _ref2.props;
+
+  var newProps = props;
+
+  Object.keys(props).forEach(function (prop) {
+    // We already recurse over children above
+    if (prop === 'children') {
+      return;
+    }
+
+    var propValue = props[prop];
+    if (_react2.default.isValidElement(propValue)) {
+      newProps = _extends({}, newProps);
+      newProps[prop] = resolveStyles(component, propValue, config, existingKeyMap, true);
+    }
+  });
+
+  return newProps;
+};
+
+var _buildGetKey = function _buildGetKey(_ref3) {
+  var componentName = _ref3.componentName;
+  var existingKeyMap = _ref3.existingKeyMap;
+  var renderedElement = _ref3.renderedElement;
+
+  // We need a unique key to correlate state changes due to user interaction
+  // with the rendered element, so we know to apply the proper interactive
+  // styles.
+  var originalKey = typeof renderedElement.ref === 'string' ? renderedElement.ref : renderedElement.key;
+  var key = (0, _getStateKey2.default)(originalKey);
+
+  var alreadyGotKey = false;
+  var getKey = function getKey() {
+    if (alreadyGotKey) {
+      return key;
+    }
+
+    alreadyGotKey = true;
+
+    if (existingKeyMap[key]) {
+      var elementName = void 0;
+      if (typeof renderedElement.type === 'string') {
+        elementName = renderedElement.type;
+      } else if (renderedElement.type.constructor) {
+        elementName = renderedElement.type.constructor.displayName || renderedElement.type.constructor.name;
+      }
+
+      throw new Error('Radium requires each element with interactive styles to have a unique ' + 'key, set using either the ref or key prop. ' + (originalKey ? 'Key "' + originalKey + '" is a duplicate.' : 'Multiple elements have no key specified.') + ' ' + 'Component: "' + componentName + '". ' + (elementName ? 'Element: "' + elementName + '".' : ''));
+    }
+
+    existingKeyMap[key] = true;
+
+    return key;
+  };
+
+  return getKey;
+};
+
+var _setStyleState = function _setStyleState(component, key, stateKey, value) {
+  if (!component._radiumIsMounted) {
+    return;
+  }
+
+  var existing = component._lastRadiumState || component.state && component.state._radiumStyleState || {};
+
+  var state = { _radiumStyleState: _extends({}, existing) };
+  state._radiumStyleState[key] = _extends({}, state._radiumStyleState[key]);
+  state._radiumStyleState[key][stateKey] = value;
+
+  component._lastRadiumState = state._radiumStyleState;
+  component.setState(state);
+};
+
+var _runPlugins = function _runPlugins(_ref4) {
+  var component = _ref4.component;
+  var config = _ref4.config;
+  var existingKeyMap = _ref4.existingKeyMap;
+  var props = _ref4.props;
+  var renderedElement = _ref4.renderedElement;
+
+  // Don't run plugins if renderedElement is not a simple ReactDOMElement or has
+  // no style.
+  if (!_react2.default.isValidElement(renderedElement) || typeof renderedElement.type !== 'string' || !props.style) {
+    return props;
+  }
+
+  var newProps = props;
+
+  var plugins = config.plugins || DEFAULT_CONFIG.plugins;
+
+  var componentName = component.constructor.displayName || component.constructor.name;
+  var getKey = _buildGetKey({ renderedElement: renderedElement, existingKeyMap: existingKeyMap, componentName: componentName });
+  var getComponentField = function getComponentField(key) {
+    return component[key];
+  };
+  var getGlobalState = function getGlobalState(key) {
+    return globalState[key];
+  };
+  var componentGetState = function componentGetState(stateKey, elementKey) {
+    return (0, _getState2.default)(component.state, elementKey || getKey(), stateKey);
+  };
+  var setState = function setState(stateKey, value, elementKey) {
+    return _setStyleState(component, elementKey || getKey(), stateKey, value);
+  };
+
+  var addCSS = function addCSS(css) {
+    var styleKeeper = component._radiumStyleKeeper || component.context._radiumStyleKeeper;
+    if (!styleKeeper) {
+      if (__isTestModeEnabled) {
+        return {
+          remove: function remove() {}
+        };
+      }
+
+      throw new Error('To use plugins requiring `addCSS` (e.g. keyframes, media queries), ' + 'please wrap your application in the StyleRoot component. Component ' + 'name: `' + componentName + '`.');
+    }
+
+    return styleKeeper.addCSS(css);
+  };
+
+  var newStyle = props.style;
+
+  plugins.forEach(function (plugin) {
+    var result = plugin({
+      ExecutionEnvironment: _exenv2.default,
+      addCSS: addCSS,
+      appendImportantToEachValue: _appendImportantToEachValue2.default,
+      componentName: componentName,
+      config: config,
+      cssRuleSetToString: _cssRuleSetToString2.default,
+      getComponentField: getComponentField,
+      getGlobalState: getGlobalState,
+      getState: componentGetState,
+      hash: _hash2.default,
+      mergeStyles: _mergeStyles.mergeStyles,
+      props: newProps,
+      setState: setState,
+      isNestedStyle: _mergeStyles.isNestedStyle,
+      style: newStyle
+    }) || {};
+
+    newStyle = result.style || newStyle;
+
+    newProps = result.props && Object.keys(result.props).length ? _extends({}, newProps, result.props) : newProps;
+
+    var newComponentFields = result.componentFields || {};
+    Object.keys(newComponentFields).forEach(function (fieldName) {
+      component[fieldName] = newComponentFields[fieldName];
+    });
+
+    var newGlobalState = result.globalState || {};
+    Object.keys(newGlobalState).forEach(function (key) {
+      globalState[key] = newGlobalState[key];
+    });
+  });
+
+  if (newStyle !== props.style) {
+    newProps = _extends({}, newProps, { style: newStyle });
+  }
+
+  return newProps;
+};
+
+// Wrapper around React.cloneElement. To avoid processing the same element
+// twice, whenever we clone an element add a special prop to make sure we don't
+// process this element again.
+var _cloneElement = function _cloneElement(renderedElement, newProps, newChildren) {
+  // Only add flag if this is a normal DOM element
+  if (typeof renderedElement.type === 'string') {
+    newProps = _extends({}, newProps, { 'data-radium': true });
+  }
+
+  return _react2.default.cloneElement(renderedElement, newProps, newChildren);
+};
+
+//
+// The nucleus of Radium. resolveStyles is called on the rendered elements
+// before they are returned in render. It iterates over the elements and
+// children, rewriting props to add event handlers required to capture user
+// interactions (e.g. mouse over). It also replaces the style prop because it
+// adds in the various interaction styles (e.g. :hover).
+//
+resolveStyles = function resolveStyles(component, // ReactComponent, flow+eslint complaining
+renderedElement) {
+  var config = arguments.length <= 2 || arguments[2] === undefined ? DEFAULT_CONFIG : arguments[2];
+  var existingKeyMap = arguments[3];
+  var shouldCheckBeforeResolve = arguments.length <= 4 || arguments[4] === undefined ? false : arguments[4];
+  // ReactElement
+  existingKeyMap = existingKeyMap || {};
+  if (!renderedElement ||
+  // Bail if we've already processed this element. This ensures that only the
+  // owner of an element processes that element, since the owner's render
+  // function will be called first (which will always be the case, since you
+  // can't know what else to render until you render the parent component).
+  renderedElement.props && renderedElement.props['data-radium'] ||
+
+  // Bail if this element is a radium enhanced element, because if it is,
+  // then it will take care of resolving its own styles.
+  shouldCheckBeforeResolve && !_shouldResolveStyles(renderedElement)) {
+    return renderedElement;
+  }
+
+  var newChildren = _resolveChildren({
+    children: renderedElement.props.children,
+    component: component,
+    config: config,
+    existingKeyMap: existingKeyMap
+  });
+
+  var newProps = _resolveProps({
+    component: component,
+    config: config,
+    existingKeyMap: existingKeyMap,
+    props: renderedElement.props
+  });
+
+  newProps = _runPlugins({
+    component: component,
+    config: config,
+    existingKeyMap: existingKeyMap,
+    props: newProps,
+    renderedElement: renderedElement
+  });
+
+  // If nothing changed, don't bother cloning the element. Might be a bit
+  // wasteful, as we add the sentinal to stop double-processing when we clone.
+  // Assume benign double-processing is better than unneeded cloning.
+  if (newChildren === renderedElement.props.children && newProps === renderedElement.props) {
+    return renderedElement;
+  }
+
+  return _cloneElement(renderedElement, newProps !== renderedElement.props ? newProps : {}, newChildren);
+};
+
+// Only for use by tests
+var __isTestModeEnabled = false;
+if (process.env.NODE_ENV !== 'production') {
+  resolveStyles.__clearStateForTests = function () {
+    globalState = {};
+  };
+  resolveStyles.__setTestMode = function (isEnabled) {
+    __isTestModeEnabled = isEnabled;
+  };
+}
+
+exports.default = resolveStyles;
+module.exports = exports['default'];
+}).call(this,require('_process'))
+},{"./append-important-to-each-value":3,"./css-rule-set-to-string":9,"./get-state":12,"./get-state-key":11,"./hash":13,"./merge-styles":17,"./plugins/":19,"_process":1,"exenv":31,"react":342}],30:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var StyleKeeper = function () {
+  function StyleKeeper(userAgent) {
+    _classCallCheck(this, StyleKeeper);
+
+    this._userAgent = userAgent;
+    this._listeners = [];
+    this._cssSet = {};
+  }
+
+  StyleKeeper.prototype.subscribe = function subscribe(listener) {
+    var _this = this;
+
+    if (this._listeners.indexOf(listener) === -1) {
+      this._listeners.push(listener);
+    }
+
+    return {
+      // Must be fat arrow to capture `this`
+      remove: function remove() {
+        var listenerIndex = _this._listeners.indexOf(listener);
+        if (listenerIndex > -1) {
+          _this._listeners.splice(listenerIndex, 1);
+        }
+      }
+    };
+  };
+
+  StyleKeeper.prototype.addCSS = function addCSS(css) {
+    var _this2 = this;
+
+    if (!this._cssSet[css]) {
+      this._cssSet[css] = true;
+      this._emitChange();
+    }
+
+    return {
+      // Must be fat arrow to capture `this`
+      remove: function remove() {
+        delete _this2._cssSet[css];
+        _this2._emitChange();
+      }
+    };
+  };
+
+  StyleKeeper.prototype.getCSS = function getCSS() {
+    return Object.keys(this._cssSet).join('\n');
+  };
+
+  StyleKeeper.prototype._emitChange = function _emitChange() {
+    this._listeners.forEach(function (listener) {
+      return listener();
+    });
+  };
+
+  return StyleKeeper;
+}();
+
+exports.default = StyleKeeper;
+module.exports = exports['default'];
+},{}],31:[function(require,module,exports){
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Based on code that is Copyright 2013-2015, Facebook, Inc.
+  All rights reserved.
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var canUseDOM = !!(
+		typeof window !== 'undefined' &&
+		window.document &&
+		window.document.createElement
+	);
+
+	var ExecutionEnvironment = {
+
+		canUseDOM: canUseDOM,
+
+		canUseWorkers: typeof Worker !== 'undefined',
+
+		canUseEventListeners:
+			canUseDOM && !!(window.addEventListener || window.attachEvent),
+
+		canUseViewport: canUseDOM && !!window.screen
+
+	};
+
+	if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+		define(function () {
+			return ExecutionEnvironment;
+		});
+	} else if (typeof module !== 'undefined' && module.exports) {
+		module.exports = ExecutionEnvironment;
+	} else {
+		window.ExecutionEnvironment = ExecutionEnvironment;
+	}
+
+}());
+
+},{}],32:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _inlineStylePrefixAll = require('inline-style-prefix-all');
+
+var _inlineStylePrefixAll2 = _interopRequireDefault(_inlineStylePrefixAll);
+
+var _utilsGetBrowserInformation = require('./utils/getBrowserInformation');
+
+var _utilsGetBrowserInformation2 = _interopRequireDefault(_utilsGetBrowserInformation);
+
+var _utilsGetPrefixedKeyframes = require('./utils/getPrefixedKeyframes');
+
+var _utilsGetPrefixedKeyframes2 = _interopRequireDefault(_utilsGetPrefixedKeyframes);
+
+var _utilsCapitalizeString = require('./utils/capitalizeString');
+
+var _utilsCapitalizeString2 = _interopRequireDefault(_utilsCapitalizeString);
+
+var _utilsAssign = require('./utils/assign');
+
+var _utilsAssign2 = _interopRequireDefault(_utilsAssign);
+
+var _prefixProps = require('./prefixProps');
+
+var _prefixProps2 = _interopRequireDefault(_prefixProps);
+
+var _pluginsCalc = require('./plugins/calc');
+
+var _pluginsCalc2 = _interopRequireDefault(_pluginsCalc);
+
+var _pluginsCursor = require('./plugins/cursor');
+
+var _pluginsCursor2 = _interopRequireDefault(_pluginsCursor);
+
+var _pluginsFlex = require('./plugins/flex');
+
+var _pluginsFlex2 = _interopRequireDefault(_pluginsFlex);
+
+var _pluginsSizing = require('./plugins/sizing');
+
+var _pluginsSizing2 = _interopRequireDefault(_pluginsSizing);
+
+var _pluginsGradient = require('./plugins/gradient');
+
+var _pluginsGradient2 = _interopRequireDefault(_pluginsGradient);
+
+var _pluginsTransition = require('./plugins/transition');
+
+var _pluginsTransition2 = _interopRequireDefault(_pluginsTransition);
+
+// special flexbox specifications
+
+var _pluginsFlexboxIE = require('./plugins/flexboxIE');
+
+var _pluginsFlexboxIE2 = _interopRequireDefault(_pluginsFlexboxIE);
+
+var _pluginsFlexboxOld = require('./plugins/flexboxOld');
+
+var _pluginsFlexboxOld2 = _interopRequireDefault(_pluginsFlexboxOld);
+
+var plugins = [_pluginsCalc2['default'], _pluginsCursor2['default'], _pluginsSizing2['default'], _pluginsGradient2['default'], _pluginsTransition2['default'], _pluginsFlexboxIE2['default'], _pluginsFlexboxOld2['default'],
+// this must be run AFTER the flexbox specs
+_pluginsFlex2['default']];
+
+var Prefixer = (function () {
+  /**
+   * Instantiante a new prefixer
+   * @param {string} userAgent - userAgent to gather prefix information according to caniuse.com
+   * @param {string} keepUnprefixed - keeps unprefixed properties and values
+   */
+
+  function Prefixer() {
+    var _this = this;
+
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    _classCallCheck(this, Prefixer);
+
+    var defaultUserAgent = typeof navigator !== 'undefined' ? navigator.userAgent : undefined;
+
+    this._userAgent = options.userAgent || defaultUserAgent;
+    this._keepUnprefixed = options.keepUnprefixed || false;
+
+    this._browserInfo = (0, _utilsGetBrowserInformation2['default'])(this._userAgent);
+
+    // Checks if the userAgent was resolved correctly
+    if (this._browserInfo && this._browserInfo.prefix) {
+      // set additional prefix information
+      this.cssPrefix = this._browserInfo.prefix.css;
+      this.jsPrefix = this._browserInfo.prefix.inline;
+      this.prefixedKeyframes = (0, _utilsGetPrefixedKeyframes2['default'])(this._browserInfo);
+    } else {
+      this._usePrefixAllFallback = true;
+      return false;
+    }
+
+    var data = this._browserInfo.browser && _prefixProps2['default'][this._browserInfo.browser];
+    if (data) {
+      this._requiresPrefix = Object.keys(data).filter(function (key) {
+        return data[key] >= _this._browserInfo.version;
+      }).reduce(function (result, name) {
+        result[name] = true;
+        return result;
+      }, {});
+      this._hasPropsRequiringPrefix = Object.keys(this._requiresPrefix).length > 0;
+    } else {
+      this._usePrefixAllFallback = true;
+    }
+  }
+
+  /**
+   * Returns a prefixed version of the style object
+   * @param {Object} styles - Style object that gets prefixed properties added
+   * @returns {Object} - Style object with prefixed properties and values
+   */
+
+  _createClass(Prefixer, [{
+    key: 'prefix',
+    value: function prefix(styles) {
+      var _this2 = this;
+
+      // use prefixAll as fallback if userAgent can not be resolved
+      if (this._usePrefixAllFallback) {
+        return (0, _inlineStylePrefixAll2['default'])(styles);
+      }
+
+      // only add prefixes if needed
+      if (!this._hasPropsRequiringPrefix) {
+        return styles;
+      }
+
+      styles = (0, _utilsAssign2['default'])({}, styles);
+
+      Object.keys(styles).forEach(function (property) {
+        var value = styles[property];
+        if (value instanceof Object) {
+          // recurse through nested style objects
+          styles[property] = _this2.prefix(value);
+        } else {
+          // add prefixes if needed
+          if (_this2._requiresPrefix[property]) {
+            styles[_this2.jsPrefix + (0, _utilsCapitalizeString2['default'])(property)] = value;
+            if (!_this2._keepUnprefixed) {
+              delete styles[property];
+            }
+          }
+
+          // resolve plugins
+          plugins.forEach(function (plugin) {
+            // generates a new plugin interface with current data
+            var resolvedStyles = plugin({
+              property: property,
+              value: value,
+              styles: styles,
+              browserInfo: _this2._browserInfo,
+              prefix: {
+                js: _this2.jsPrefix,
+                css: _this2.cssPrefix,
+                keyframes: _this2.prefixedKeyframes
+              },
+              keepUnprefixed: _this2._keepUnprefixed,
+              requiresPrefix: _this2._requiresPrefix
+            });
+            (0, _utilsAssign2['default'])(styles, resolvedStyles);
+          });
+        }
+      });
+
+      return styles;
+    }
+
+    /**
+     * Returns a prefixed version of the style object using all vendor prefixes
+     * @param {Object} styles - Style object that gets prefixed properties added
+     * @returns {Object} - Style object with prefixed properties and values
+     */
+  }], [{
+    key: 'prefixAll',
+    value: function prefixAll(styles) {
+      return (0, _inlineStylePrefixAll2['default'])(styles);
+    }
+  }]);
+
+  return Prefixer;
+})();
+
+exports['default'] = Prefixer;
+module.exports = exports['default'];
+},{"./plugins/calc":33,"./plugins/cursor":34,"./plugins/flex":35,"./plugins/flexboxIE":36,"./plugins/flexboxOld":37,"./plugins/gradient":38,"./plugins/sizing":39,"./plugins/transition":40,"./prefixProps":41,"./utils/assign":42,"./utils/capitalizeString":44,"./utils/getBrowserInformation":45,"./utils/getPrefixedKeyframes":46,"inline-style-prefix-all":57}],33:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = calc;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+function calc(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var _ref2$browserInfo = _ref2.browserInfo;
+  var browser = _ref2$browserInfo.browser;
+  var version = _ref2$browserInfo.version;
+  var css = _ref2.prefix.css;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  if (typeof value === 'string' && value.indexOf('calc(') > -1 && (browser === 'firefox' && version < 15 || browser === 'chrome' && version < 25 || browser === 'safari' && version < 6.1 || browser === 'ios_saf' && version < 7)) {
+    return _defineProperty({}, property, value.replace(/calc\(/g, css + 'calc(') + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : ''));
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],34:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = cursor;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var values = {
+  'zoom-in': true,
+  'zoom-out': true,
+  'grab': true,
+  'grabbing': true
+};
+
+function cursor(_ref) {
+  var property = _ref.property;
+  var value = _ref.value;
+  var _ref$browserInfo = _ref.browserInfo;
+  var browser = _ref$browserInfo.browser;
+  var version = _ref$browserInfo.version;
+  var css = _ref.prefix.css;
+  var keepUnprefixed = _ref.keepUnprefixed;
+
+  if (property === 'cursor' && values[value] && (browser === 'firefox' && version < 24 || browser === 'chrome' && version < 37 || browser === 'safari' && version < 9 || browser === 'opera' && version < 24)) {
+    return {
+      cursor: css + value + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : '')
+    };
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],35:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flex;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var values = {
+  'flex': true,
+  'inline-flex': true
+};
+
+function flex(_ref) {
+  var property = _ref.property;
+  var value = _ref.value;
+  var _ref$browserInfo = _ref.browserInfo;
+  var browser = _ref$browserInfo.browser;
+  var version = _ref$browserInfo.version;
+  var css = _ref.prefix.css;
+  var keepUnprefixed = _ref.keepUnprefixed;
+
+  if (property === 'display' && values[value] && (browser === 'chrome' && version < 29 && version > 20 || (browser === 'safari' || browser === 'ios_saf') && version < 9 && version > 6 || browser === 'opera' && (version == 15 || version == 16))) {
+    return {
+      display: css + value + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : '')
+    };
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],36:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flexboxIE;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var alternativeValues = {
+  'space-around': 'distribute',
+  'space-between': 'justify',
+  'flex-start': 'start',
+  'flex-end': 'end',
+  flex: 'flexbox',
+  'inline-flex': 'inline-flexbox'
+};
+var alternativeProps = {
+  alignContent: 'msFlexLinePack',
+  alignSelf: 'msFlexItemAlign',
+  alignItems: 'msFlexAlign',
+  justifyContent: 'msFlexPack',
+  order: 'msFlexOrder',
+  flexGrow: 'msFlexPositive',
+  flexShrink: 'msFlexNegative',
+  flexBasis: 'msPreferredSize'
+};
+
+var properties = Object.keys(alternativeProps).reduce(function (result, prop) {
+  result[prop] = true;
+  return result;
+}, {});
+
+function flexboxIE(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var styles = _ref2.styles;
+  var _ref2$browserInfo = _ref2.browserInfo;
+  var browser = _ref2$browserInfo.browser;
+  var version = _ref2$browserInfo.version;
+  var css = _ref2.prefix.css;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  if ((properties[property] || property === 'display' && typeof value === 'string' && value.indexOf('flex') > -1) && (browser === 'ie_mob' || browser === 'ie') && version == 10) {
+    if (!keepUnprefixed) {
+      delete styles[property];
+    }
+    if (property === 'display' && alternativeValues[value]) {
+      return {
+        display: css + alternativeValues[value] + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : '')
+      };
+    }
+    if (alternativeProps[property]) {
+      return _defineProperty({}, alternativeProps[property], alternativeValues[value] || value);
+    }
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],37:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flexboxOld;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var alternativeValues = {
+  'space-around': 'justify',
+  'space-between': 'justify',
+  'flex-start': 'start',
+  'flex-end': 'end',
+  'wrap-reverse': 'multiple',
+  wrap: 'multiple',
+  flex: 'box',
+  'inline-flex': 'inline-box'
+};
+
+var alternativeProps = {
+  alignItems: 'WebkitBoxAlign',
+  justifyContent: 'WebkitBoxPack',
+  flexWrap: 'WebkitBoxLines'
+};
+
+var otherProps = ['alignContent', 'alignSelf', 'order', 'flexGrow', 'flexShrink', 'flexBasis', 'flexDirection'];
+
+var properties = Object.keys(alternativeProps).concat(otherProps).reduce(function (result, prop) {
+  result[prop] = true;
+  return result;
+}, {});
+
+function flexboxOld(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var styles = _ref2.styles;
+  var _ref2$browserInfo = _ref2.browserInfo;
+  var browser = _ref2$browserInfo.browser;
+  var version = _ref2$browserInfo.version;
+  var css = _ref2.prefix.css;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  if ((properties[property] || property === 'display' && typeof value === 'string' && value.indexOf('flex') > -1) && (browser === 'firefox' && version < 22 || browser === 'chrome' && version < 21 || (browser === 'safari' || browser === 'ios_saf') && version <= 6.1 || browser === 'android' && version < 4.4 || browser === 'and_uc')) {
+    if (!keepUnprefixed) {
+      delete styles[property];
+    }
+    if (property === 'flexDirection') {
+      return {
+        WebkitBoxOrient: value.indexOf('column') > -1 ? 'vertical' : 'horizontal',
+        WebkitBoxDirection: value.indexOf('reverse') > -1 ? 'reverse' : 'normal'
+      };
+    }
+    if (property === 'display' && alternativeValues[value]) {
+      return {
+        display: css + alternativeValues[value] + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : '')
+      };
+    }
+    if (alternativeProps[property]) {
+      return _defineProperty({}, alternativeProps[property], alternativeValues[value] || value);
+    }
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],38:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = gradient;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var values = /linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient/;
+
+function gradient(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var _ref2$browserInfo = _ref2.browserInfo;
+  var browser = _ref2$browserInfo.browser;
+  var version = _ref2$browserInfo.version;
+  var css = _ref2.prefix.css;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  if (typeof value === 'string' && value.match(values) !== null && (browser === 'firefox' && version < 16 || browser === 'chrome' && version < 26 || (browser === 'safari' || browser === 'ios_saf') && version < 7 || (browser === 'opera' || browser === 'op_mini') && version < 12.1 || browser === 'android' && version < 4.4 || browser === 'and_uc')) {
+    return _defineProperty({}, property, css + value + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : ''));
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],39:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = sizing;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var properties = {
+  maxHeight: true,
+  maxWidth: true,
+  width: true,
+  height: true,
+  columnWidth: true,
+  minWidth: true,
+  minHeight: true
+};
+var values = {
+  'min-content': true,
+  'max-content': true,
+  'fill-available': true,
+  'fit-content': true,
+  'contain-floats': true
+};
+
+function sizing(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var css = _ref2.prefix.css;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  // This might change in the future
+  // Keep an eye on it
+  if (properties[property] && values[value]) {
+    return _defineProperty({}, property, css + value + (keepUnprefixed ? ';' + (0, _utilsCamelToDashCase2['default'])(property) + ':' + value : ''));
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = transition;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var _utilsCapitalizeString = require('../utils/capitalizeString');
+
+var _utilsCapitalizeString2 = _interopRequireDefault(_utilsCapitalizeString);
+
+var _utilsUnprefixProperty = require('../utils/unprefixProperty');
+
+var _utilsUnprefixProperty2 = _interopRequireDefault(_utilsUnprefixProperty);
+
+var properties = { transition: true, transitionProperty: true };
+
+function transition(_ref2) {
+  var property = _ref2.property;
+  var value = _ref2.value;
+  var css = _ref2.prefix.css;
+  var requiresPrefix = _ref2.requiresPrefix;
+  var keepUnprefixed = _ref2.keepUnprefixed;
+
+  // also check for already prefixed transitions
+  var unprefixedProperty = (0, _utilsUnprefixProperty2['default'])(property);
+  if (typeof value === 'string' && properties[unprefixedProperty]) {
+    var _ret = (function () {
+      var requiresPrefixDashCased = Object.keys(requiresPrefix).map(function (prop) {
+        return (0, _utilsCamelToDashCase2['default'])(prop);
+      });
+
+      // only split multi values, not cubic beziers
+      var multipleValues = value.split(/,(?![^()]*(?:\([^()]*\))?\))/g);
+
+      requiresPrefixDashCased.forEach(function (property) {
+        multipleValues.forEach(function (val, index) {
+          if (val.indexOf(property) > -1) {
+            multipleValues[index] = val.replace(property, css + property) + (keepUnprefixed ? ',' + val : '');
+          }
+        });
+      });
+
+      return {
+        v: _defineProperty({}, property, multipleValues.join(','))
+      };
+    })();
+
+    if (typeof _ret === 'object') return _ret.v;
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":43,"../utils/capitalizeString":44,"../utils/unprefixProperty":47}],41:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = { "chrome": { "transform": 35, "transformOrigin": 35, "transformOriginX": 35, "transformOriginY": 35, "backfaceVisibility": 35, "perspective": 35, "perspectiveOrigin": 35, "transformStyle": 35, "transformOriginZ": 35, "animation": 42, "animationDelay": 42, "animationDirection": 42, "animationFillMode": 42, "animationDuration": 42, "animationIterationCount": 42, "animationName": 42, "animationPlayState": 42, "animationTimingFunction": 42, "appearance": 52, "userSelect": 52, "fontKerning": 32, "textEmphasisPosition": 52, "textEmphasis": 52, "textEmphasisStyle": 52, "textEmphasisColor": 52, "boxDecorationBreak": 52, "clipPath": 52, "maskImage": 52, "maskMode": 52, "maskRepeat": 52, "maskPosition": 52, "maskClip": 52, "maskOrigin": 52, "maskSize": 52, "maskComposite": 52, "mask": 52, "maskBorderSource": 52, "maskBorderMode": 52, "maskBorderSlice": 52, "maskBorderWidth": 52, "maskBorderOutset": 52, "maskBorderRepeat": 52, "maskBorder": 52, "maskType": 52, "textDecorationStyle": 52, "textDecorationSkip": 52, "textDecorationLine": 52, "textDecorationColor": 52, "filter": 52, "fontFeatureSettings": 47, "breakAfter": 52, "breakBefore": 52, "breakInside": 52, "columnCount": 52, "columnFill": 52, "columnGap": 52, "columnRule": 52, "columnRuleColor": 52, "columnRuleStyle": 52, "columnRuleWidth": 52, "columns": 52, "columnSpan": 52, "columnWidth": 52 }, "safari": { "flex": 8, "flexBasis": 8, "flexDirection": 8, "flexGrow": 8, "flexFlow": 8, "flexShrink": 8, "flexWrap": 8, "alignContent": 8, "alignItems": 8, "alignSelf": 8, "justifyContent": 8, "order": 8, "transition": 6, "transitionDelay": 6, "transitionDuration": 6, "transitionProperty": 6, "transitionTimingFunction": 6, "transform": 8, "transformOrigin": 8, "transformOriginX": 8, "transformOriginY": 8, "backfaceVisibility": 8, "perspective": 8, "perspectiveOrigin": 8, "transformStyle": 8, "transformOriginZ": 8, "animation": 8, "animationDelay": 8, "animationDirection": 8, "animationFillMode": 8, "animationDuration": 8, "animationIterationCount": 8, "animationName": 8, "animationPlayState": 8, "animationTimingFunction": 8, "appearance": 9.1, "userSelect": 9.1, "backdropFilter": 9.1, "fontKerning": 9.1, "scrollSnapType": 9.1, "scrollSnapPointsX": 9.1, "scrollSnapPointsY": 9.1, "scrollSnapDestination": 9.1, "scrollSnapCoordinate": 9.1, "textEmphasisPosition": 7, "textEmphasis": 7, "textEmphasisStyle": 7, "textEmphasisColor": 7, "boxDecorationBreak": 9.1, "clipPath": 9.1, "maskImage": 9.1, "maskMode": 9.1, "maskRepeat": 9.1, "maskPosition": 9.1, "maskClip": 9.1, "maskOrigin": 9.1, "maskSize": 9.1, "maskComposite": 9.1, "mask": 9.1, "maskBorderSource": 9.1, "maskBorderMode": 9.1, "maskBorderSlice": 9.1, "maskBorderWidth": 9.1, "maskBorderOutset": 9.1, "maskBorderRepeat": 9.1, "maskBorder": 9.1, "maskType": 9.1, "textDecorationStyle": 9.1, "textDecorationSkip": 9.1, "textDecorationLine": 9.1, "textDecorationColor": 9.1, "shapeImageThreshold": 9.1, "shapeImageMargin": 9.1, "shapeImageOutside": 9.1, "filter": 9, "hyphens": 9.1, "flowInto": 9.1, "flowFrom": 9.1, "breakBefore": 8, "breakAfter": 8, "breakInside": 8, "regionFragment": 9.1, "columnCount": 8, "columnFill": 8, "columnGap": 8, "columnRule": 8, "columnRuleColor": 8, "columnRuleStyle": 8, "columnRuleWidth": 8, "columns": 8, "columnSpan": 8, "columnWidth": 8 }, "firefox": { "appearance": 47, "userSelect": 47, "boxSizing": 28, "textAlignLast": 47, "textDecorationStyle": 35, "textDecorationSkip": 35, "textDecorationLine": 35, "textDecorationColor": 35, "tabSize": 47, "hyphens": 42, "fontFeatureSettings": 33, "breakAfter": 47, "breakBefore": 47, "breakInside": 47, "columnCount": 47, "columnFill": 47, "columnGap": 47, "columnRule": 47, "columnRuleColor": 47, "columnRuleStyle": 47, "columnRuleWidth": 47, "columns": 47, "columnSpan": 47, "columnWidth": 47 }, "opera": { "flex": 16, "flexBasis": 16, "flexDirection": 16, "flexGrow": 16, "flexFlow": 16, "flexShrink": 16, "flexWrap": 16, "alignContent": 16, "alignItems": 16, "alignSelf": 16, "justifyContent": 16, "order": 16, "transform": 22, "transformOrigin": 22, "transformOriginX": 22, "transformOriginY": 22, "backfaceVisibility": 22, "perspective": 22, "perspectiveOrigin": 22, "transformStyle": 22, "transformOriginZ": 22, "animation": 29, "animationDelay": 29, "animationDirection": 29, "animationFillMode": 29, "animationDuration": 29, "animationIterationCount": 29, "animationName": 29, "animationPlayState": 29, "animationTimingFunction": 29, "appearance": 37, "userSelect": 37, "fontKerning": 19, "textEmphasisPosition": 37, "textEmphasis": 37, "textEmphasisStyle": 37, "textEmphasisColor": 37, "boxDecorationBreak": 37, "clipPath": 37, "maskImage": 37, "maskMode": 37, "maskRepeat": 37, "maskPosition": 37, "maskClip": 37, "maskOrigin": 37, "maskSize": 37, "maskComposite": 37, "mask": 37, "maskBorderSource": 37, "maskBorderMode": 37, "maskBorderSlice": 37, "maskBorderWidth": 37, "maskBorderOutset": 37, "maskBorderRepeat": 37, "maskBorder": 37, "maskType": 37, "filter": 37, "fontFeatureSettings": 37, "breakAfter": 37, "breakBefore": 37, "breakInside": 37, "columnCount": 37, "columnFill": 37, "columnGap": 37, "columnRule": 37, "columnRuleColor": 37, "columnRuleStyle": 37, "columnRuleWidth": 37, "columns": 37, "columnSpan": 37, "columnWidth": 37 }, "ie": { "gridTemplateRows": 11, "breakInside": 11, "transformOriginY": 9, "gridRowStart": 11, "gridColumn": 11, "regionFragment": 11, "breakBefore": 11, "userSelect": 11, "gridColumnEnd": 11, "gridRowEnd": 11, "gridTemplateColumns": 11, "gridColumnStart": 11, "gridArea": 11, "flexDirection": 10, "gridRowGap": 11, "gridTemplateAreas": 11, "gridAutoRows": 11, "gridRow": 11, "scrollSnapDestination": 11, "scrollSnapPointsY": 11, "touchAction": 10, "gridGap": 11, "gridColumnGap": 11, "wrapFlow": 11, "scrollSnapPointsX": 11, "flowFrom": 11, "transform": 9, "breakAfter": 11, "wrapMargin": 11, "scrollSnapCoordinate": 11, "flexWrap": 10, "scrollSnapType": 11, "flex": 10, "wrapThrough": 11, "gridAutoColumns": 11, "flexFlow": 10, "gridTemplate": 11, "hyphens": 11, "grid": 11, "transformOriginX": 9, "flowInto": 11, "transformOrigin": 9, "gridAutoFlow": 11, "textSizeAdjust": 11 }, "edge": { "userSelect": 14, "wrapFlow": 14, "wrapThrough": 14, "wrapMargin": 14, "scrollSnapType": 14, "scrollSnapPointsX": 14, "scrollSnapPointsY": 14, "scrollSnapDestination": 14, "scrollSnapCoordinate": 14, "hyphens": 14, "flowInto": 14, "flowFrom": 14, "breakBefore": 14, "breakAfter": 14, "breakInside": 14, "regionFragment": 14, "gridTemplateColumns": 14, "gridTemplateRows": 14, "gridTemplateAreas": 14, "gridTemplate": 14, "gridAutoColumns": 14, "gridAutoRows": 14, "gridAutoFlow": 14, "grid": 14, "gridRowStart": 14, "gridColumnStart": 14, "gridRowEnd": 14, "gridRow": 14, "gridColumn": 14, "gridColumnEnd": 14, "gridColumnGap": 14, "gridRowGap": 14, "gridArea": 14, "gridGap": 14 }, "ios_saf": { "flex": 8.1, "flexBasis": 8.1, "flexDirection": 8.1, "flexGrow": 8.1, "flexFlow": 8.1, "flexShrink": 8.1, "flexWrap": 8.1, "alignContent": 8.1, "alignItems": 8.1, "alignSelf": 8.1, "justifyContent": 8.1, "order": 8.1, "transition": 6, "transitionDelay": 6, "transitionDuration": 6, "transitionProperty": 6, "transitionTimingFunction": 6, "transform": 8.1, "transformOrigin": 8.1, "transformOriginX": 8.1, "transformOriginY": 8.1, "backfaceVisibility": 8.1, "perspective": 8.1, "perspectiveOrigin": 8.1, "transformStyle": 8.1, "transformOriginZ": 8.1, "animation": 8.1, "animationDelay": 8.1, "animationDirection": 8.1, "animationFillMode": 8.1, "animationDuration": 8.1, "animationIterationCount": 8.1, "animationName": 8.1, "animationPlayState": 8.1, "animationTimingFunction": 8.1, "appearance": 9.3, "userSelect": 9.3, "backdropFilter": 9.3, "fontKerning": 9.3, "scrollSnapType": 9.3, "scrollSnapPointsX": 9.3, "scrollSnapPointsY": 9.3, "scrollSnapDestination": 9.3, "scrollSnapCoordinate": 9.3, "boxDecorationBreak": 9.3, "clipPath": 9.3, "maskImage": 9.3, "maskMode": 9.3, "maskRepeat": 9.3, "maskPosition": 9.3, "maskClip": 9.3, "maskOrigin": 9.3, "maskSize": 9.3, "maskComposite": 9.3, "mask": 9.3, "maskBorderSource": 9.3, "maskBorderMode": 9.3, "maskBorderSlice": 9.3, "maskBorderWidth": 9.3, "maskBorderOutset": 9.3, "maskBorderRepeat": 9.3, "maskBorder": 9.3, "maskType": 9.3, "textSizeAdjust": 9.3, "textDecorationStyle": 9.3, "textDecorationSkip": 9.3, "textDecorationLine": 9.3, "textDecorationColor": 9.3, "shapeImageThreshold": 9.3, "shapeImageMargin": 9.3, "shapeImageOutside": 9.3, "filter": 9, "hyphens": 9.3, "flowInto": 9.3, "flowFrom": 9.3, "breakBefore": 8.1, "breakAfter": 8.1, "breakInside": 8.1, "regionFragment": 9.3, "columnCount": 8.1, "columnFill": 8.1, "columnGap": 8.1, "columnRule": 8.1, "columnRuleColor": 8.1, "columnRuleStyle": 8.1, "columnRuleWidth": 8.1, "columns": 8.1, "columnSpan": 8.1, "columnWidth": 8.1 }, "android": { "borderImage": 4.2, "borderImageOutset": 4.2, "borderImageRepeat": 4.2, "borderImageSlice": 4.2, "borderImageSource": 4.2, "borderImageWidth": 4.2, "flex": 4.2, "flexBasis": 4.2, "flexDirection": 4.2, "flexGrow": 4.2, "flexFlow": 4.2, "flexShrink": 4.2, "flexWrap": 4.2, "alignContent": 4.2, "alignItems": 4.2, "alignSelf": 4.2, "justifyContent": 4.2, "order": 4.2, "transition": 4.2, "transitionDelay": 4.2, "transitionDuration": 4.2, "transitionProperty": 4.2, "transitionTimingFunction": 4.2, "transform": 4.4, "transformOrigin": 4.4, "transformOriginX": 4.4, "transformOriginY": 4.4, "backfaceVisibility": 4.4, "perspective": 4.4, "perspectiveOrigin": 4.4, "transformStyle": 4.4, "transformOriginZ": 4.4, "animation": 4.4, "animationDelay": 4.4, "animationDirection": 4.4, "animationFillMode": 4.4, "animationDuration": 4.4, "animationIterationCount": 4.4, "animationName": 4.4, "animationPlayState": 4.4, "animationTimingFunction": 4.4, "appearance": 47, "userSelect": 47, "fontKerning": 4.4, "textEmphasisPosition": 47, "textEmphasis": 47, "textEmphasisStyle": 47, "textEmphasisColor": 47, "boxDecorationBreak": 47, "clipPath": 47, "maskImage": 47, "maskMode": 47, "maskRepeat": 47, "maskPosition": 47, "maskClip": 47, "maskOrigin": 47, "maskSize": 47, "maskComposite": 47, "mask": 47, "maskBorderSource": 47, "maskBorderMode": 47, "maskBorderSlice": 47, "maskBorderWidth": 47, "maskBorderOutset": 47, "maskBorderRepeat": 47, "maskBorder": 47, "maskType": 47, "filter": 47, "fontFeatureSettings": 47, "breakAfter": 47, "breakBefore": 47, "breakInside": 47, "columnCount": 47, "columnFill": 47, "columnGap": 47, "columnRule": 47, "columnRuleColor": 47, "columnRuleStyle": 47, "columnRuleWidth": 47, "columns": 47, "columnSpan": 47, "columnWidth": 47 }, "and_chr": { "appearance": 47, "userSelect": 47, "textEmphasisPosition": 47, "textEmphasis": 47, "textEmphasisStyle": 47, "textEmphasisColor": 47, "boxDecorationBreak": 47, "clipPath": 47, "maskImage": 47, "maskMode": 47, "maskRepeat": 47, "maskPosition": 47, "maskClip": 47, "maskOrigin": 47, "maskSize": 47, "maskComposite": 47, "mask": 47, "maskBorderSource": 47, "maskBorderMode": 47, "maskBorderSlice": 47, "maskBorderWidth": 47, "maskBorderOutset": 47, "maskBorderRepeat": 47, "maskBorder": 47, "maskType": 47, "textDecorationStyle": 47, "textDecorationSkip": 47, "textDecorationLine": 47, "textDecorationColor": 47, "filter": 47, "fontFeatureSettings": 47, "breakAfter": 47, "breakBefore": 47, "breakInside": 47, "columnCount": 47, "columnFill": 47, "columnGap": 47, "columnRule": 47, "columnRuleColor": 47, "columnRuleStyle": 47, "columnRuleWidth": 47, "columns": 47, "columnSpan": 47, "columnWidth": 47 }, "and_uc": { "flex": 9.9, "flexBasis": 9.9, "flexDirection": 9.9, "flexGrow": 9.9, "flexFlow": 9.9, "flexShrink": 9.9, "flexWrap": 9.9, "alignContent": 9.9, "alignItems": 9.9, "alignSelf": 9.9, "justifyContent": 9.9, "order": 9.9, "transition": 9.9, "transitionDelay": 9.9, "transitionDuration": 9.9, "transitionProperty": 9.9, "transitionTimingFunction": 9.9, "transform": 9.9, "transformOrigin": 9.9, "transformOriginX": 9.9, "transformOriginY": 9.9, "backfaceVisibility": 9.9, "perspective": 9.9, "perspectiveOrigin": 9.9, "transformStyle": 9.9, "transformOriginZ": 9.9, "animation": 9.9, "animationDelay": 9.9, "animationDirection": 9.9, "animationFillMode": 9.9, "animationDuration": 9.9, "animationIterationCount": 9.9, "animationName": 9.9, "animationPlayState": 9.9, "animationTimingFunction": 9.9, "appearance": 9.9, "userSelect": 9.9, "fontKerning": 9.9, "textEmphasisPosition": 9.9, "textEmphasis": 9.9, "textEmphasisStyle": 9.9, "textEmphasisColor": 9.9, "maskImage": 9.9, "maskMode": 9.9, "maskRepeat": 9.9, "maskPosition": 9.9, "maskClip": 9.9, "maskOrigin": 9.9, "maskSize": 9.9, "maskComposite": 9.9, "mask": 9.9, "maskBorderSource": 9.9, "maskBorderMode": 9.9, "maskBorderSlice": 9.9, "maskBorderWidth": 9.9, "maskBorderOutset": 9.9, "maskBorderRepeat": 9.9, "maskBorder": 9.9, "maskType": 9.9, "textSizeAdjust": 9.9, "filter": 9.9, "hyphens": 9.9, "flowInto": 9.9, "flowFrom": 9.9, "breakBefore": 9.9, "breakAfter": 9.9, "breakInside": 9.9, "regionFragment": 9.9, "fontFeatureSettings": 9.9, "columnCount": 9.9, "columnFill": 9.9, "columnGap": 9.9, "columnRule": 9.9, "columnRuleColor": 9.9, "columnRuleStyle": 9.9, "columnRuleWidth": 9.9, "columns": 9.9, "columnSpan": 9.9, "columnWidth": 9.9 }, "op_mini": { "borderImage": 5, "borderImageOutset": 5, "borderImageRepeat": 5, "borderImageSlice": 5, "borderImageSource": 5, "borderImageWidth": 5, "tabSize": 5, "objectFit": 5, "objectPosition": 5 } };
+module.exports = exports["default"];
+},{}],42:[function(require,module,exports){
+// leight polyfill for Object.assign
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports["default"] = function (base) {
+  var extend = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  Object.keys(extend).forEach(function (key) {
+    return base[key] = extend[key];
+  });
+  return base;
+};
+
+module.exports = exports["default"];
+},{}],43:[function(require,module,exports){
+/**
+ * Converts a camel-case string to a dash-case string
+ * @param {string} str - str that gets converted to dash-case
+ */
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+exports['default'] = function (str) {
+  return str.replace(/([a-z]|^)([A-Z])/g, function (match, p1, p2) {
+    return p1 + '-' + p2.toLowerCase();
+  }).replace('ms-', '-ms-');
+};
+
+module.exports = exports['default'];
+},{}],44:[function(require,module,exports){
+// helper to capitalize strings
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports["default"] = function (str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+module.exports = exports["default"];
+},{}],45:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _bowser = require('bowser');
+
+var _bowser2 = _interopRequireDefault(_bowser);
+
+var vendorPrefixes = {
+  Webkit: ['chrome', 'safari', 'ios', 'android', 'phantom', 'opera', 'webos', 'blackberry', 'bada', 'tizen'],
+  Moz: ['firefox', 'seamonkey', 'sailfish'],
+  ms: ['msie', 'msedge']
+};
+
+var browsers = {
+  chrome: [['chrome']],
+  safari: [['safari']],
+  firefox: [['firefox']],
+  ie: [['msie']],
+  edge: [['msedge']],
+  opera: [['opera']],
+  ios_saf: [['ios', 'mobile'], ['ios', 'tablet']],
+  ie_mob: [['windowsphone', 'mobile', 'msie'], ['windowsphone', 'tablet', 'msie'], ['windowsphone', 'mobile', 'msedge'], ['windowsphone', 'tablet', 'msedge']],
+  op_mini: [['opera', 'mobile'], ['opera', 'tablet']],
+  and_uc: [['android', 'mobile'], ['android', 'tablet']],
+  android: [['android', 'mobile'], ['android', 'tablet']]
+};
+
+/**
+ * Uses bowser to get default browser information such as version and name
+ * Evaluates bowser info and adds vendorPrefix information
+ * @param {string} userAgent - userAgent that gets evaluated
+ */
+
+exports['default'] = function (userAgent) {
+  if (!userAgent) {
+    return false;
+  }
+
+  var info = _bowser2['default']._detect(userAgent);
+
+  Object.keys(vendorPrefixes).forEach(function (prefix) {
+    vendorPrefixes[prefix].forEach(function (browser) {
+      if (info[browser]) {
+        info.prefix = {
+          inline: prefix,
+          css: '-' + prefix.toLowerCase() + '-'
+        };
+      }
+    });
+  });
+
+  var name = '';
+  Object.keys(browsers).forEach(function (browser) {
+    browsers[browser].forEach(function (condition) {
+      var match = 0;
+      condition.forEach(function (single) {
+        if (info[single]) {
+          match += 1;
+        }
+      });
+      if (condition.length === match) {
+        name = browser;
+      }
+    });
+  });
+
+  info.browser = name;
+  // For cordova IOS 8 the version is missing, set truncated osversion to prevent NaN
+  info.version = info.version ? parseFloat(info.version) : parseInt(parseFloat(info.osversion), 10);
+
+  // seperate native android chrome
+  // https://github.com/rofrischmann/inline-style-prefixer/issues/45
+  if (info.browser === 'android' && info.chrome && info.version > 37) {
+    info.browser = 'and_chr';
+  }
+  info.version = parseFloat(info.version);
+  info.osversion = parseFloat(info.osversion);
+  // For android < 4.4 we want to check the osversion
+  // not the chrome version, see issue #26
+  // https://github.com/rofrischmann/inline-style-prefixer/issues/26
+  if (info.browser === 'android' && info.osversion < 5) {
+    info.version = info.osversion;
+  }
+
+  return info;
+};
+
+module.exports = exports['default'];
+},{"bowser":48}],46:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+exports['default'] = function (_ref) {
+  var browser = _ref.browser;
+  var version = _ref.version;
+  var prefix = _ref.prefix;
+
+  var prefixedKeyframes = 'keyframes';
+
+  if (browser === 'chrome' && version < 43 || (browser === 'safari' || browser === 'ios_saf') && version < 9 || browser === 'opera' && version < 30 || browser === 'android' && version <= 4.4 || browser === 'and_uc') {
+    prefixedKeyframes = prefix.css + prefixedKeyframes;
+  }
+  return prefixedKeyframes;
+};
+
+module.exports = exports['default'];
+},{}],47:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+exports['default'] = function (property) {
+  var unprefixed = property.replace(/^(ms|Webkit|Moz|O)/, '');
+  return unprefixed.charAt(0).toLowerCase() + unprefixed.slice(1);
+};
+
+module.exports = exports['default'];
+},{}],48:[function(require,module,exports){
+/*!
+ * Bowser - a browser detector
+ * https://github.com/ded/bowser
+ * MIT License | (c) Dustin Diaz 2015
+ */
+
+!function (name, definition) {
+  if (typeof module != 'undefined' && module.exports) module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(name, definition)
+  else this[name] = definition()
+}('bowser', function () {
+  /**
+    * See useragents.js for examples of navigator.userAgent
+    */
+
+  var t = true
+
+  function detect(ua) {
+
+    function getFirstMatch(regex) {
+      var match = ua.match(regex);
+      return (match && match.length > 1 && match[1]) || '';
+    }
+
+    function getSecondMatch(regex) {
+      var match = ua.match(regex);
+      return (match && match.length > 1 && match[2]) || '';
+    }
+
+    var iosdevice = getFirstMatch(/(ipod|iphone|ipad)/i).toLowerCase()
+      , likeAndroid = /like android/i.test(ua)
+      , android = !likeAndroid && /android/i.test(ua)
+      , nexusMobile = /nexus\s*[0-6]\s*/i.test(ua)
+      , nexusTablet = !nexusMobile && /nexus\s*[0-9]+/i.test(ua)
+      , chromeos = /CrOS/.test(ua)
+      , silk = /silk/i.test(ua)
+      , sailfish = /sailfish/i.test(ua)
+      , tizen = /tizen/i.test(ua)
+      , webos = /(web|hpw)os/i.test(ua)
+      , windowsphone = /windows phone/i.test(ua)
+      , samsungBrowser = /SamsungBrowser/i.test(ua)
+      , windows = !windowsphone && /windows/i.test(ua)
+      , mac = !iosdevice && !silk && /macintosh/i.test(ua)
+      , linux = !android && !sailfish && !tizen && !webos && /linux/i.test(ua)
+      , edgeVersion = getFirstMatch(/edge\/(\d+(\.\d+)?)/i)
+      , versionIdentifier = getFirstMatch(/version\/(\d+(\.\d+)?)/i)
+      , tablet = /tablet/i.test(ua)
+      , mobile = !tablet && /[^-]mobi/i.test(ua)
+      , xbox = /xbox/i.test(ua)
+      , result
+
+    if (/opera/i.test(ua)) {
+      //  an old Opera
+      result = {
+        name: 'Opera'
+      , opera: t
+      , version: versionIdentifier || getFirstMatch(/(?:opera|opr|opios)[\s\/](\d+(\.\d+)?)/i)
+      }
+    } else if (/opr|opios/i.test(ua)) {
+      // a new Opera
+      result = {
+        name: 'Opera'
+        , opera: t
+        , version: getFirstMatch(/(?:opr|opios)[\s\/](\d+(\.\d+)?)/i) || versionIdentifier
+      }
+    }
+    else if (/SamsungBrowser/i.test(ua)) {
+      result = {
+        name: 'Samsung Internet for Android'
+        , samsungBrowser: t
+        , version: versionIdentifier || getFirstMatch(/(?:SamsungBrowser)[\s\/](\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/coast/i.test(ua)) {
+      result = {
+        name: 'Opera Coast'
+        , coast: t
+        , version: versionIdentifier || getFirstMatch(/(?:coast)[\s\/](\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/yabrowser/i.test(ua)) {
+      result = {
+        name: 'Yandex Browser'
+      , yandexbrowser: t
+      , version: versionIdentifier || getFirstMatch(/(?:yabrowser)[\s\/](\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/ucbrowser/i.test(ua)) {
+      result = {
+          name: 'UC Browser'
+        , ucbrowser: t
+        , version: getFirstMatch(/(?:ucbrowser)[\s\/](\d+(?:\.\d+)+)/i)
+      }
+    }
+    else if (/mxios/i.test(ua)) {
+      result = {
+        name: 'Maxthon'
+        , maxthon: t
+        , version: getFirstMatch(/(?:mxios)[\s\/](\d+(?:\.\d+)+)/i)
+      }
+    }
+    else if (/epiphany/i.test(ua)) {
+      result = {
+        name: 'Epiphany'
+        , epiphany: t
+        , version: getFirstMatch(/(?:epiphany)[\s\/](\d+(?:\.\d+)+)/i)
+      }
+    }
+    else if (/puffin/i.test(ua)) {
+      result = {
+        name: 'Puffin'
+        , puffin: t
+        , version: getFirstMatch(/(?:puffin)[\s\/](\d+(?:\.\d+)?)/i)
+      }
+    }
+    else if (/sleipnir/i.test(ua)) {
+      result = {
+        name: 'Sleipnir'
+        , sleipnir: t
+        , version: getFirstMatch(/(?:sleipnir)[\s\/](\d+(?:\.\d+)+)/i)
+      }
+    }
+    else if (/k-meleon/i.test(ua)) {
+      result = {
+        name: 'K-Meleon'
+        , kMeleon: t
+        , version: getFirstMatch(/(?:k-meleon)[\s\/](\d+(?:\.\d+)+)/i)
+      }
+    }
+    else if (windowsphone) {
+      result = {
+        name: 'Windows Phone'
+      , windowsphone: t
+      }
+      if (edgeVersion) {
+        result.msedge = t
+        result.version = edgeVersion
+      }
+      else {
+        result.msie = t
+        result.version = getFirstMatch(/iemobile\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/msie|trident/i.test(ua)) {
+      result = {
+        name: 'Internet Explorer'
+      , msie: t
+      , version: getFirstMatch(/(?:msie |rv:)(\d+(\.\d+)?)/i)
+      }
+    } else if (chromeos) {
+      result = {
+        name: 'Chrome'
+      , chromeos: t
+      , chromeBook: t
+      , chrome: t
+      , version: getFirstMatch(/(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i)
+      }
+    } else if (/chrome.+? edge/i.test(ua)) {
+      result = {
+        name: 'Microsoft Edge'
+      , msedge: t
+      , version: edgeVersion
+      }
+    }
+    else if (/vivaldi/i.test(ua)) {
+      result = {
+        name: 'Vivaldi'
+        , vivaldi: t
+        , version: getFirstMatch(/vivaldi\/(\d+(\.\d+)?)/i) || versionIdentifier
+      }
+    }
+    else if (sailfish) {
+      result = {
+        name: 'Sailfish'
+      , sailfish: t
+      , version: getFirstMatch(/sailfish\s?browser\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/seamonkey\//i.test(ua)) {
+      result = {
+        name: 'SeaMonkey'
+      , seamonkey: t
+      , version: getFirstMatch(/seamonkey\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/firefox|iceweasel|fxios/i.test(ua)) {
+      result = {
+        name: 'Firefox'
+      , firefox: t
+      , version: getFirstMatch(/(?:firefox|iceweasel|fxios)[ \/](\d+(\.\d+)?)/i)
+      }
+      if (/\((mobile|tablet);[^\)]*rv:[\d\.]+\)/i.test(ua)) {
+        result.firefoxos = t
+      }
+    }
+    else if (silk) {
+      result =  {
+        name: 'Amazon Silk'
+      , silk: t
+      , version : getFirstMatch(/silk\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/phantom/i.test(ua)) {
+      result = {
+        name: 'PhantomJS'
+      , phantom: t
+      , version: getFirstMatch(/phantomjs\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/slimerjs/i.test(ua)) {
+      result = {
+        name: 'SlimerJS'
+        , slimer: t
+        , version: getFirstMatch(/slimerjs\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (/blackberry|\bbb\d+/i.test(ua) || /rim\stablet/i.test(ua)) {
+      result = {
+        name: 'BlackBerry'
+      , blackberry: t
+      , version: versionIdentifier || getFirstMatch(/blackberry[\d]+\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (webos) {
+      result = {
+        name: 'WebOS'
+      , webos: t
+      , version: versionIdentifier || getFirstMatch(/w(?:eb)?osbrowser\/(\d+(\.\d+)?)/i)
+      };
+      /touchpad\//i.test(ua) && (result.touchpad = t)
+    }
+    else if (/bada/i.test(ua)) {
+      result = {
+        name: 'Bada'
+      , bada: t
+      , version: getFirstMatch(/dolfin\/(\d+(\.\d+)?)/i)
+      };
+    }
+    else if (tizen) {
+      result = {
+        name: 'Tizen'
+      , tizen: t
+      , version: getFirstMatch(/(?:tizen\s?)?browser\/(\d+(\.\d+)?)/i) || versionIdentifier
+      };
+    }
+    else if (/qupzilla/i.test(ua)) {
+      result = {
+        name: 'QupZilla'
+        , qupzilla: t
+        , version: getFirstMatch(/(?:qupzilla)[\s\/](\d+(?:\.\d+)+)/i) || versionIdentifier
+      }
+    }
+    else if (/chromium/i.test(ua)) {
+      result = {
+        name: 'Chromium'
+        , chromium: t
+        , version: getFirstMatch(/(?:chromium)[\s\/](\d+(?:\.\d+)?)/i) || versionIdentifier
+      }
+    }
+    else if (/chrome|crios|crmo/i.test(ua)) {
+      result = {
+        name: 'Chrome'
+        , chrome: t
+        , version: getFirstMatch(/(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i)
+      }
+    }
+    else if (android) {
+      result = {
+        name: 'Android'
+        , version: versionIdentifier
+      }
+    }
+    else if (/safari|applewebkit/i.test(ua)) {
+      result = {
+        name: 'Safari'
+      , safari: t
+      }
+      if (versionIdentifier) {
+        result.version = versionIdentifier
+      }
+    }
+    else if (iosdevice) {
+      result = {
+        name : iosdevice == 'iphone' ? 'iPhone' : iosdevice == 'ipad' ? 'iPad' : 'iPod'
+      }
+      // WTF: version is not part of user agent in web apps
+      if (versionIdentifier) {
+        result.version = versionIdentifier
+      }
+    }
+    else if(/googlebot/i.test(ua)) {
+      result = {
+        name: 'Googlebot'
+      , googlebot: t
+      , version: getFirstMatch(/googlebot\/(\d+(\.\d+))/i) || versionIdentifier
+      }
+    }
+    else {
+      result = {
+        name: getFirstMatch(/^(.*)\/(.*) /),
+        version: getSecondMatch(/^(.*)\/(.*) /)
+     };
+   }
+
+    // set webkit or gecko flag for browsers based on these engines
+    if (!result.msedge && /(apple)?webkit/i.test(ua)) {
+      if (/(apple)?webkit\/537\.36/i.test(ua)) {
+        result.name = result.name || "Blink"
+        result.blink = t
+      } else {
+        result.name = result.name || "Webkit"
+        result.webkit = t
+      }
+      if (!result.version && versionIdentifier) {
+        result.version = versionIdentifier
+      }
+    } else if (!result.opera && /gecko\//i.test(ua)) {
+      result.name = result.name || "Gecko"
+      result.gecko = t
+      result.version = result.version || getFirstMatch(/gecko\/(\d+(\.\d+)?)/i)
+    }
+
+    // set OS flags for platforms that have multiple browsers
+    if (!result.windowsphone && !result.msedge && (android || result.silk)) {
+      result.android = t
+    } else if (!result.windowsphone && !result.msedge && iosdevice) {
+      result[iosdevice] = t
+      result.ios = t
+    } else if (mac) {
+      result.mac = t
+    } else if (xbox) {
+      result.xbox = t
+    } else if (windows) {
+      result.windows = t
+    } else if (linux) {
+      result.linux = t
+    }
+
+    // OS version extraction
+    var osVersion = '';
+    if (result.windowsphone) {
+      osVersion = getFirstMatch(/windows phone (?:os)?\s?(\d+(\.\d+)*)/i);
+    } else if (iosdevice) {
+      osVersion = getFirstMatch(/os (\d+([_\s]\d+)*) like mac os x/i);
+      osVersion = osVersion.replace(/[_\s]/g, '.');
+    } else if (android) {
+      osVersion = getFirstMatch(/android[ \/-](\d+(\.\d+)*)/i);
+    } else if (result.webos) {
+      osVersion = getFirstMatch(/(?:web|hpw)os\/(\d+(\.\d+)*)/i);
+    } else if (result.blackberry) {
+      osVersion = getFirstMatch(/rim\stablet\sos\s(\d+(\.\d+)*)/i);
+    } else if (result.bada) {
+      osVersion = getFirstMatch(/bada\/(\d+(\.\d+)*)/i);
+    } else if (result.tizen) {
+      osVersion = getFirstMatch(/tizen[\/\s](\d+(\.\d+)*)/i);
+    }
+    if (osVersion) {
+      result.osversion = osVersion;
+    }
+
+    // device type extraction
+    var osMajorVersion = osVersion.split('.')[0];
+    if (
+         tablet
+      || nexusTablet
+      || iosdevice == 'ipad'
+      || (android && (osMajorVersion == 3 || (osMajorVersion >= 4 && !mobile)))
+      || result.silk
+    ) {
+      result.tablet = t
+    } else if (
+         mobile
+      || iosdevice == 'iphone'
+      || iosdevice == 'ipod'
+      || android
+      || nexusMobile
+      || result.blackberry
+      || result.webos
+      || result.bada
+    ) {
+      result.mobile = t
+    }
+
+    // Graded Browser Support
+    // http://developer.yahoo.com/yui/articles/gbs
+    if (result.msedge ||
+        (result.msie && result.version >= 10) ||
+        (result.yandexbrowser && result.version >= 15) ||
+		    (result.vivaldi && result.version >= 1.0) ||
+        (result.chrome && result.version >= 20) ||
+        (result.samsungBrowser && result.version >= 4) ||
+        (result.firefox && result.version >= 20.0) ||
+        (result.safari && result.version >= 6) ||
+        (result.opera && result.version >= 10.0) ||
+        (result.ios && result.osversion && result.osversion.split(".")[0] >= 6) ||
+        (result.blackberry && result.version >= 10.1)
+        || (result.chromium && result.version >= 20)
+        ) {
+      result.a = t;
+    }
+    else if ((result.msie && result.version < 10) ||
+        (result.chrome && result.version < 20) ||
+        (result.firefox && result.version < 20.0) ||
+        (result.safari && result.version < 6) ||
+        (result.opera && result.version < 10.0) ||
+        (result.ios && result.osversion && result.osversion.split(".")[0] < 6)
+        || (result.chromium && result.version < 20)
+        ) {
+      result.c = t
+    } else result.x = t
+
+    return result
+  }
+
+  var bowser = detect(typeof navigator !== 'undefined' ? navigator.userAgent || '' : '')
+
+  bowser.test = function (browserList) {
+    for (var i = 0; i < browserList.length; ++i) {
+      var browserItem = browserList[i];
+      if (typeof browserItem=== 'string') {
+        if (browserItem in bowser) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get version precisions count
+   *
+   * @example
+   *   getVersionPrecision("1.10.3") // 3
+   *
+   * @param  {string} version
+   * @return {number}
+   */
+  function getVersionPrecision(version) {
+    return version.split(".").length;
+  }
+
+  /**
+   * Array::map polyfill
+   *
+   * @param  {Array} arr
+   * @param  {Function} iterator
+   * @return {Array}
+   */
+  function map(arr, iterator) {
+    var result = [], i;
+    if (Array.prototype.map) {
+      return Array.prototype.map.call(arr, iterator);
+    }
+    for (i = 0; i < arr.length; i++) {
+      result.push(iterator(arr[i]));
+    }
+    return result;
+  }
+
+  /**
+   * Calculate browser version weight
+   *
+   * @example
+   *   compareVersions(['1.10.2.1',  '1.8.2.1.90'])    // 1
+   *   compareVersions(['1.010.2.1', '1.09.2.1.90']);  // 1
+   *   compareVersions(['1.10.2.1',  '1.10.2.1']);     // 0
+   *   compareVersions(['1.10.2.1',  '1.0800.2']);     // -1
+   *
+   * @param  {Array<String>} versions versions to compare
+   * @return {Number} comparison result
+   */
+  function compareVersions(versions) {
+    // 1) get common precision for both versions, for example for "10.0" and "9" it should be 2
+    var precision = Math.max(getVersionPrecision(versions[0]), getVersionPrecision(versions[1]));
+    var chunks = map(versions, function (version) {
+      var delta = precision - getVersionPrecision(version);
+
+      // 2) "9" -> "9.0" (for precision = 2)
+      version = version + new Array(delta + 1).join(".0");
+
+      // 3) "9.0" -> ["000000000"", "000000009"]
+      return map(version.split("."), function (chunk) {
+        return new Array(20 - chunk.length).join("0") + chunk;
+      }).reverse();
+    });
+
+    // iterate in reverse order by reversed chunks array
+    while (--precision >= 0) {
+      // 4) compare: "000000009" > "000000010" = false (but "9" > "10" = true)
+      if (chunks[0][precision] > chunks[1][precision]) {
+        return 1;
+      }
+      else if (chunks[0][precision] === chunks[1][precision]) {
+        if (precision === 0) {
+          // all version chunks are same
+          return 0;
+        }
+      }
+      else {
+        return -1;
+      }
+    }
+  }
+
+  /**
+   * Check if browser is unsupported
+   *
+   * @example
+   *   bowser.isUnsupportedBrowser({
+   *     msie: "10",
+   *     firefox: "23",
+   *     chrome: "29",
+   *     safari: "5.1",
+   *     opera: "16",
+   *     phantom: "534"
+   *   });
+   *
+   * @param  {Object}  minVersions map of minimal version to browser
+   * @param  {Boolean} [strictMode = false] flag to return false if browser wasn't found in map
+   * @param  {String}  [ua] user agent string
+   * @return {Boolean}
+   */
+  function isUnsupportedBrowser(minVersions, strictMode, ua) {
+    var _bowser = bowser;
+
+    // make strictMode param optional with ua param usage
+    if (typeof strictMode === 'string') {
+      ua = strictMode;
+      strictMode = void(0);
+    }
+
+    if (strictMode === void(0)) {
+      strictMode = false;
+    }
+    if (ua) {
+      _bowser = detect(ua);
+    }
+
+    var version = "" + _bowser.version;
+    for (var browser in minVersions) {
+      if (minVersions.hasOwnProperty(browser)) {
+        if (_bowser[browser]) {
+          if (typeof minVersions[browser] !== 'string') {
+            throw new Error('Browser version in the minVersion map should be a string: ' + browser + ': ' + String(minVersions));
+          }
+
+          // browser version and min supported version.
+          return compareVersions([version, minVersions[browser]]) < 0;
+        }
+      }
+    }
+
+    return strictMode; // not found
+  }
+
+  /**
+   * Check if browser is supported
+   *
+   * @param  {Object} minVersions map of minimal version to browser
+   * @param  {Boolean} [strictMode = false] flag to return false if browser wasn't found in map
+   * @param  {String}  [ua] user agent string
+   * @return {Boolean}
+   */
+  function check(minVersions, strictMode, ua) {
+    return !isUnsupportedBrowser(minVersions, strictMode, ua);
+  }
+
+  bowser.isUnsupportedBrowser = isUnsupportedBrowser;
+  bowser.compareVersions = compareVersions;
+  bowser.check = check;
+
+  /*
+   * Set our detect method to the main bowser object so we can
+   * reuse it to test other user agents.
+   * This is needed to implement future tests.
+   */
+  bowser._detect = detect;
+
+  return bowser
+});
+
+},{}],49:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = calc;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsJoinPrefixedRules = require('../utils/joinPrefixedRules');
+
+var _utilsJoinPrefixedRules2 = _interopRequireDefault(_utilsJoinPrefixedRules);
+
+var _utilsIsPrefixedValue = require('../utils/isPrefixedValue');
+
+var _utilsIsPrefixedValue2 = _interopRequireDefault(_utilsIsPrefixedValue);
+
+function calc(property, value) {
+  if (typeof value === 'string' && value.indexOf('calc(') > -1) {
+    if ((0, _utilsIsPrefixedValue2['default'])(value)) return;
+
+    return (0, _utilsJoinPrefixedRules2['default'])(property, value, function (prefix, value) {
+      return value.replace(/calc\(/g, prefix + 'calc(');
+    });
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/isPrefixedValue":62,"../utils/joinPrefixedRules":63}],50:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = cursor;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsJoinPrefixedRules = require('../utils/joinPrefixedRules');
+
+var _utilsJoinPrefixedRules2 = _interopRequireDefault(_utilsJoinPrefixedRules);
+
+var values = {
+  'zoom-in': true,
+  'zoom-out': true,
+  'grab': true,
+  'grabbing': true
+};
+
+function cursor(property, value) {
+  if (property === 'cursor' && values[value]) {
+    return (0, _utilsJoinPrefixedRules2['default'])(property, value);
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/joinPrefixedRules":63}],51:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flex;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var values = { flex: true, 'inline-flex': true };
+
+function flex(property, value) {
+  if (property === 'display' && values[value]) {
+    return {
+      display: ['-webkit-box', '-moz-box', '-ms-' + value + 'box', '-webkit-' + value, value]
+    };
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":60}],52:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flexboxIE;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var alternativeValues = {
+  'space-around': 'distribute',
+  'space-between': 'justify',
+  'flex-start': 'start',
+  'flex-end': 'end'
+};
+var alternativeProps = {
+  alignContent: 'msFlexLinePack',
+  alignSelf: 'msFlexItemAlign',
+  alignItems: 'msFlexAlign',
+  justifyContent: 'msFlexPack',
+  order: 'msFlexOrder',
+  flexGrow: 'msFlexPositive',
+  flexShrink: 'msFlexNegative',
+  flexBasis: 'msPreferredSize'
+};
+
+function flexboxIE(property, value) {
+  if (alternativeProps[property]) {
+    return _defineProperty({}, alternativeProps[property], alternativeValues[value] || value);
+  }
+}
+
+module.exports = exports['default'];
+},{}],53:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = flexboxOld;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var alternativeValues = {
+  'space-around': 'justify',
+  'space-between': 'justify',
+  'flex-start': 'start',
+  'flex-end': 'end',
+  'wrap-reverse': 'multiple',
+  wrap: 'multiple'
+};
+
+var alternativeProps = {
+  alignItems: 'WebkitBoxAlign',
+  justifyContent: 'WebkitBoxPack',
+  flexWrap: 'WebkitBoxLines'
+};
+
+function flexboxOld(property, value) {
+  if (property === 'flexDirection') {
+    return {
+      WebkitBoxOrient: value.indexOf('column') > -1 ? 'vertical' : 'horizontal',
+      WebkitBoxDirection: value.indexOf('reverse') > -1 ? 'reverse' : 'normal'
+    };
+  }
+  if (alternativeProps[property]) {
+    return _defineProperty({}, alternativeProps[property], alternativeValues[value] || value);
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/camelToDashCase":60}],54:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = gradient;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsJoinPrefixedRules = require('../utils/joinPrefixedRules');
+
+var _utilsJoinPrefixedRules2 = _interopRequireDefault(_utilsJoinPrefixedRules);
+
+var _utilsIsPrefixedValue = require('../utils/isPrefixedValue');
+
+var _utilsIsPrefixedValue2 = _interopRequireDefault(_utilsIsPrefixedValue);
+
+var values = /linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient/;
+
+function gradient(property, value) {
+  if (typeof value === 'string' && value.match(values) !== null) {
+    if ((0, _utilsIsPrefixedValue2['default'])(value)) return;
+
+    return (0, _utilsJoinPrefixedRules2['default'])(property, value);
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/isPrefixedValue":62,"../utils/joinPrefixedRules":63}],55:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = sizing;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utilsJoinPrefixedRules = require('../utils/joinPrefixedRules');
+
+var _utilsJoinPrefixedRules2 = _interopRequireDefault(_utilsJoinPrefixedRules);
+
+var properties = {
+  maxHeight: true,
+  maxWidth: true,
+  width: true,
+  height: true,
+  columnWidth: true,
+  minWidth: true,
+  minHeight: true
+};
+var values = {
+  'min-content': true,
+  'max-content': true,
+  'fill-available': true,
+  'fit-content': true,
+  'contain-floats': true
+};
+
+function sizing(property, value) {
+  if (properties[property] && values[value]) {
+    return (0, _utilsJoinPrefixedRules2['default'])(property, value);
+  }
+}
+
+module.exports = exports['default'];
+},{"../utils/joinPrefixedRules":63}],56:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = transition;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _utilsCamelToDashCase = require('../utils/camelToDashCase');
+
+var _utilsCamelToDashCase2 = _interopRequireDefault(_utilsCamelToDashCase);
+
+var _utilsCapitalizeString = require('../utils/capitalizeString');
+
+var _utilsCapitalizeString2 = _interopRequireDefault(_utilsCapitalizeString);
+
+var _utilsIsPrefixedValue = require('../utils/isPrefixedValue');
+
+var _utilsIsPrefixedValue2 = _interopRequireDefault(_utilsIsPrefixedValue);
+
+var _prefixProps = require('../prefixProps');
+
+var _prefixProps2 = _interopRequireDefault(_prefixProps);
+
+var properties = {
+  transition: true,
+  transitionProperty: true,
+  WebkitTransition: true,
+  WebkitTransitionProperty: true
+};
+
+function transition(property, value) {
+  // also check for already prefixed transitions
+  if (typeof value === 'string' && properties[property]) {
+    var _ref2;
+
+    var outputValue = prefixValue(value);
+    var webkitOutput = outputValue.split(',').filter(function (value) {
+      return value.match(/-moz-|-ms-/) === null;
+    }).join(',');
+
+    // if the property is already prefixed
+    if (property.indexOf('Webkit') > -1) {
+      return _defineProperty({}, property, webkitOutput);
+    }
+
+    return _ref2 = {}, _defineProperty(_ref2, 'Webkit' + (0, _utilsCapitalizeString2['default'])(property), webkitOutput), _defineProperty(_ref2, property, outputValue), _ref2;
+  }
+}
+
+function prefixValue(value) {
+  if ((0, _utilsIsPrefixedValue2['default'])(value)) {
+    return value;
+  }
+
+  // only split multi values, not cubic beziers
+  var multipleValues = value.split(/,(?![^()]*(?:\([^()]*\))?\))/g);
+
+  // iterate each single value and check for transitioned properties
+  // that need to be prefixed as well
+  multipleValues.forEach(function (val, index) {
+    multipleValues[index] = Object.keys(_prefixProps2['default']).reduce(function (out, prefix) {
+      var dashCasePrefix = '-' + prefix.toLowerCase() + '-';
+
+      Object.keys(_prefixProps2['default'][prefix]).forEach(function (prop) {
+        var dashCaseProperty = (0, _utilsCamelToDashCase2['default'])(prop);
+
+        if (val.indexOf(dashCaseProperty) > -1) {
+          // join all prefixes and create a new value
+          out = val.replace(dashCaseProperty, dashCasePrefix + dashCaseProperty) + ',' + out;
+        }
+      });
+      return out;
+    }, val);
+  });
+
+  return multipleValues.join(',');
+}
+module.exports = exports['default'];
+},{"../prefixProps":58,"../utils/camelToDashCase":60,"../utils/capitalizeString":61,"../utils/isPrefixedValue":62}],57:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = prefixAll;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _prefixProps = require('./prefixProps');
+
+var _prefixProps2 = _interopRequireDefault(_prefixProps);
+
+var _utilsCapitalizeString = require('./utils/capitalizeString');
+
+var _utilsCapitalizeString2 = _interopRequireDefault(_utilsCapitalizeString);
+
+var _utilsAssign = require('./utils/assign');
+
+var _utilsAssign2 = _interopRequireDefault(_utilsAssign);
+
+var _pluginsCalc = require('./plugins/calc');
+
+var _pluginsCalc2 = _interopRequireDefault(_pluginsCalc);
+
+var _pluginsCursor = require('./plugins/cursor');
+
+var _pluginsCursor2 = _interopRequireDefault(_pluginsCursor);
+
+var _pluginsFlex = require('./plugins/flex');
+
+var _pluginsFlex2 = _interopRequireDefault(_pluginsFlex);
+
+var _pluginsSizing = require('./plugins/sizing');
+
+var _pluginsSizing2 = _interopRequireDefault(_pluginsSizing);
+
+var _pluginsGradient = require('./plugins/gradient');
+
+var _pluginsGradient2 = _interopRequireDefault(_pluginsGradient);
+
+var _pluginsTransition = require('./plugins/transition');
+
+var _pluginsTransition2 = _interopRequireDefault(_pluginsTransition);
+
+// special flexbox specifications
+
+var _pluginsFlexboxIE = require('./plugins/flexboxIE');
+
+var _pluginsFlexboxIE2 = _interopRequireDefault(_pluginsFlexboxIE);
+
+var _pluginsFlexboxOld = require('./plugins/flexboxOld');
+
+var _pluginsFlexboxOld2 = _interopRequireDefault(_pluginsFlexboxOld);
+
+var plugins = [_pluginsCalc2['default'], _pluginsCursor2['default'], _pluginsSizing2['default'], _pluginsGradient2['default'], _pluginsTransition2['default'], _pluginsFlexboxIE2['default'], _pluginsFlexboxOld2['default'], _pluginsFlex2['default']];
+
+/**
+ * Returns a prefixed version of the style object using all vendor prefixes
+ * @param {Object} styles - Style object that gets prefixed properties added
+ * @returns {Object} - Style object with prefixed properties and values
+ */
+
+function prefixAll(styles) {
+  return Object.keys(styles).reduce(function (prefixedStyles, property) {
+    var value = styles[property];
+    if (value instanceof Object && !Array.isArray(value)) {
+      // recurse through nested style objects
+      prefixedStyles[property] = prefixAll(value);
+    } else {
+      Object.keys(_prefixProps2['default']).forEach(function (prefix) {
+        var properties = _prefixProps2['default'][prefix];
+        // add prefixes if needed
+        if (properties[property]) {
+          prefixedStyles[prefix + (0, _utilsCapitalizeString2['default'])(property)] = value;
+        }
+      });
+
+      // resolve every special plugins
+      plugins.forEach(function (plugin) {
+        return (0, _utilsAssign2['default'])(prefixedStyles, plugin(property, value));
+      });
+    }
+
+    return prefixedStyles;
+  }, styles);
+}
+
+module.exports = exports['default'];
+},{"./plugins/calc":49,"./plugins/cursor":50,"./plugins/flex":51,"./plugins/flexboxIE":52,"./plugins/flexboxOld":53,"./plugins/gradient":54,"./plugins/sizing":55,"./plugins/transition":56,"./prefixProps":58,"./utils/assign":59,"./utils/capitalizeString":61}],58:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = { "Webkit": { "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "backfaceVisibility": true, "perspective": true, "perspectiveOrigin": true, "transformStyle": true, "transformOriginZ": true, "animation": true, "animationDelay": true, "animationDirection": true, "animationFillMode": true, "animationDuration": true, "animationIterationCount": true, "animationName": true, "animationPlayState": true, "animationTimingFunction": true, "appearance": true, "userSelect": true, "fontKerning": true, "textEmphasisPosition": true, "textEmphasis": true, "textEmphasisStyle": true, "textEmphasisColor": true, "boxDecorationBreak": true, "clipPath": true, "maskImage": true, "maskMode": true, "maskRepeat": true, "maskPosition": true, "maskClip": true, "maskOrigin": true, "maskSize": true, "maskComposite": true, "mask": true, "maskBorderSource": true, "maskBorderMode": true, "maskBorderSlice": true, "maskBorderWidth": true, "maskBorderOutset": true, "maskBorderRepeat": true, "maskBorder": true, "maskType": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "filter": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true, "flex": true, "flexBasis": true, "flexDirection": true, "flexGrow": true, "flexFlow": true, "flexShrink": true, "flexWrap": true, "alignContent": true, "alignItems": true, "alignSelf": true, "justifyContent": true, "order": true, "transition": true, "transitionDelay": true, "transitionDuration": true, "transitionProperty": true, "transitionTimingFunction": true, "backdropFilter": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "shapeImageThreshold": true, "shapeImageMargin": true, "shapeImageOutside": true, "hyphens": true, "flowInto": true, "flowFrom": true, "regionFragment": true, "textSizeAdjust": true, "borderImage": true, "borderImageOutset": true, "borderImageRepeat": true, "borderImageSlice": true, "borderImageSource": true, "borderImageWidth": true, "tabSize": true, "objectFit": true, "objectPosition": true }, "Moz": { "appearance": true, "userSelect": true, "boxSizing": true, "textAlignLast": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "tabSize": true, "hyphens": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true }, "ms": { "flex": true, "flexBasis": false, "flexDirection": true, "flexGrow": false, "flexFlow": true, "flexShrink": false, "flexWrap": true, "alignContent": false, "alignItems": false, "alignSelf": false, "justifyContent": false, "order": false, "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "userSelect": true, "wrapFlow": true, "wrapThrough": true, "wrapMargin": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "touchAction": true, "hyphens": true, "flowInto": true, "flowFrom": true, "breakBefore": true, "breakAfter": true, "breakInside": true, "regionFragment": true, "gridTemplateColumns": true, "gridTemplateRows": true, "gridTemplateAreas": true, "gridTemplate": true, "gridAutoColumns": true, "gridAutoRows": true, "gridAutoFlow": true, "grid": true, "gridRowStart": true, "gridColumnStart": true, "gridRowEnd": true, "gridRow": true, "gridColumn": true, "gridColumnEnd": true, "gridColumnGap": true, "gridRowGap": true, "gridArea": true, "gridGap": true, "textSizeAdjust": true } };
+module.exports = exports["default"];
+},{}],59:[function(require,module,exports){
+// leight polyfill for Object.assign
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports["default"] = function (base) {
+  var extend = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  return Object.keys(extend).reduce(function (out, key) {
+    base[key] = extend[key];
+    return out;
+  }, {});
+};
+
+module.exports = exports["default"];
+},{}],60:[function(require,module,exports){
+arguments[4][43][0].apply(exports,arguments)
+},{"dup":43}],61:[function(require,module,exports){
+arguments[4][44][0].apply(exports,arguments)
+},{"dup":44}],62:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+exports['default'] = function (value) {
+  if (Array.isArray(value)) value = value.join(',');
+
+  return value.match(/-webkit-|-moz-|-ms-/) !== null;
+};
+
+module.exports = exports['default'];
+},{}],63:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _camelToDashCase = require('./camelToDashCase');
+
+var _camelToDashCase2 = _interopRequireDefault(_camelToDashCase);
+
+// returns a style object with a single concated prefixed value string
+
+exports['default'] = function (property, value) {
+  var replacer = arguments.length <= 2 || arguments[2] === undefined ? function (prefix, value) {
+    return prefix + value;
+  } : arguments[2];
+  return (function () {
+    return _defineProperty({}, property, ['-webkit-', '-moz-', ''].map(function (prefix) {
+      return replacer(prefix, value);
+    }));
+  })();
+};
+
+module.exports = exports['default'];
+},{"./camelToDashCase":60}],64:[function(require,module,exports){
+'use strict';
+
+/**
+ * BezierEasing - use bezier curve for transition easing function
+ * by Gaëtan Renaudeau 2014 - 2015 – MIT License
+ *
+ * Credits: is based on Firefox's nsSMILKeySpline.cpp
+ * Usage:
+ * var spline = BezierEasing([ 0.25, 0.1, 0.25, 1.0 ])
+ * spline.get(x) => returns the easing value | x must be in [0, 1] range
+ *
+ */
+
+// These values are established by empiricism with tests (tradeoff: performance VS precision)
+var NEWTON_ITERATIONS = 4;
+var NEWTON_MIN_SLOPE = 0.001;
+var SUBDIVISION_PRECISION = 0.0000001;
+var SUBDIVISION_MAX_ITERATIONS = 10;
+
+var kSplineTableSize = 11;
+var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
+
+var float32ArraySupported = typeof Float32Array === 'function';
+
+function A(aA1, aA2) {
+  return 1.0 - 3.0 * aA2 + 3.0 * aA1;
+}
+function B(aA1, aA2) {
+  return 3.0 * aA2 - 6.0 * aA1;
+}
+function C(aA1) {
+  return 3.0 * aA1;
+}
+
+// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+function calcBezier(aT, aA1, aA2) {
+  return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT;
+}
+
+// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+function getSlope(aT, aA1, aA2) {
+  return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1);
+}
+
+function binarySubdivide(aX, aA, aB, mX1, mX2) {
+  var currentX,
+      currentT,
+      i = 0;
+  do {
+    currentT = aA + (aB - aA) / 2.0;
+    currentX = calcBezier(currentT, mX1, mX2) - aX;
+    if (currentX > 0.0) {
+      aB = currentT;
+    } else {
+      aA = currentT;
+    }
+  } while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+  return currentT;
+}
+
+function newtonRaphsonIterate(aX, aGuessT, mX1, mX2) {
+  for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+    var currentSlope = getSlope(aGuessT, mX1, mX2);
+    if (currentSlope === 0.0) return aGuessT;
+    var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+    aGuessT -= currentX / currentSlope;
+  }
+  return aGuessT;
+}
+
+/**
+ * points is an array of [ mX1, mY1, mX2, mY2 ]
+ */
+function BezierEasing(points, b, c, d) {
+  if (arguments.length === 4) {
+    return new BezierEasing([points, b, c, d]);
+  }
+  if (!(this instanceof BezierEasing)) return new BezierEasing(points);
+
+  if (!points || points.length !== 4) {
+    throw new Error('BezierEasing: points must contains 4 values');
+  }
+  for (var i = 0; i < 4; ++i) {
+    if (typeof points[i] !== 'number' || isNaN(points[i]) || !isFinite(points[i])) {
+      throw new Error('BezierEasing: points should be integers.');
+    }
+  }
+  if (points[0] < 0 || points[0] > 1 || points[2] < 0 || points[2] > 1) {
+    throw new Error('BezierEasing x values must be in [0, 1] range.');
+  }
+
+  this._str = 'BezierEasing(' + points + ')';
+  this._css = 'cubic-bezier(' + points + ')';
+  this._p = points;
+  this._mSampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize);
+  this._precomputed = false;
+
+  this.get = this.get.bind(this);
+}
+
+BezierEasing.prototype = {
+
+  get: function get(x) {
+    var mX1 = this._p[0],
+        mY1 = this._p[1],
+        mX2 = this._p[2],
+        mY2 = this._p[3];
+    if (!this._precomputed) this._precompute();
+    if (mX1 === mY1 && mX2 === mY2) return x; // linear
+    // Because JavaScript number are imprecise, we should guarantee the extremes are right.
+    if (x === 0) return 0;
+    if (x === 1) return 1;
+    return calcBezier(this._getTForX(x), mY1, mY2);
+  },
+
+  getPoints: function getPoints() {
+    return this._p;
+  },
+
+  toString: function toString() {
+    return this._str;
+  },
+
+  toCSS: function toCSS() {
+    return this._css;
+  },
+
+  // Private part
+
+  _precompute: function _precompute() {
+    var mX1 = this._p[0],
+        mY1 = this._p[1],
+        mX2 = this._p[2],
+        mY2 = this._p[3];
+    this._precomputed = true;
+    if (mX1 !== mY1 || mX2 !== mY2) this._calcSampleValues();
+  },
+
+  _calcSampleValues: function _calcSampleValues() {
+    var mX1 = this._p[0],
+        mX2 = this._p[2];
+    for (var i = 0; i < kSplineTableSize; ++i) {
+      this._mSampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
+    }
+  },
+
+  /**
+   * getTForX chose the fastest heuristic to determine the percentage value precisely from a given X projection.
+   */
+  _getTForX: function _getTForX(aX) {
+    var mX1 = this._p[0],
+        mX2 = this._p[2],
+        mSampleValues = this._mSampleValues;
+
+    var intervalStart = 0.0;
+    var currentSample = 1;
+    var lastSample = kSplineTableSize - 1;
+
+    for (; currentSample !== lastSample && mSampleValues[currentSample] <= aX; ++currentSample) {
+      intervalStart += kSampleStepSize;
+    }
+    --currentSample;
+
+    // Interpolate to provide an initial guess for t
+    var dist = (aX - mSampleValues[currentSample]) / (mSampleValues[currentSample + 1] - mSampleValues[currentSample]);
+    var guessForT = intervalStart + dist * kSampleStepSize;
+
+    var initialSlope = getSlope(guessForT, mX1, mX2);
+    if (initialSlope >= NEWTON_MIN_SLOPE) {
+      return newtonRaphsonIterate(aX, guessForT, mX1, mX2);
+    } else if (initialSlope === 0.0) {
+      return guessForT;
+    } else {
+      return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+    }
+  }
+};
+
+// CSS mapping
+BezierEasing.css = {
+  'ease': BezierEasing.ease = BezierEasing(0.25, 0.1, 0.25, 1.0),
+  'linear': BezierEasing.linear = BezierEasing(0.00, 0.0, 1.00, 1.0),
+  'ease-in': BezierEasing.easeIn = BezierEasing(0.42, 0.0, 1.00, 1.0),
+  'ease-out': BezierEasing.easeOut = BezierEasing(0.00, 0.0, 0.58, 1.0),
+  'ease-in-out': BezierEasing.easeInOut = BezierEasing(0.42, 0.0, 0.58, 1.0)
+};
+
+module.exports = BezierEasing;
+},{}],65:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windows = require('../../style/color/windows');
+
+var _windows2 = require('../../style/theme/windows');
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _color = require('../../color');
+
+var _windows3 = require('./styles/windows10');
+
+var _windows4 = _interopRequireDefault(_windows3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Button = (_dec = (0, _hidden2.default)(), _dec2 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Button, _Component);
+
+  function Button() {
+    _classCallCheck(this, Button);
+
+    return _possibleConstructorReturn(this, (Button.__proto__ || Object.getPrototypeOf(Button)).apply(this, arguments));
+  }
+
+  _createClass(Button, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var type = _props.type;
+      var children = _props.children;
+      var color = _props.color;
+      var push = _props.push;
+      var onClick = _props.onClick;
+
+      var props = _objectWithoutProperties(_props, ['style', 'type', 'children', 'color', 'push', 'onClick']);
+
+      var componentStyle = _extends({}, _windows4.default.button, style);
+
+      if (color) {
+        color = color === true ? this.context.color : color;
+        _windows4.default.colorButton = _extends({}, _windows4.default.colorButton, {
+          borderColor: color,
+          backgroundColor: color,
+          ':hover': _extends({}, _windows4.default.colorButton[':hover'], {
+            borderColor: (0, _color.darkenColor)(color, .35)
+          }),
+
+          ':active': _extends({}, _windows4.default.colorButton[':active'], {
+            borderColor: (0, _color.darkenColor)(color, .35),
+            backgroundColor: (0, _color.darkenColor)(color, .35)
+          })
+        });
+        componentStyle = _extends({}, componentStyle, _windows4.default.colorButton);
+      }
+
+      if (push) {
+        componentStyle[':active'] = _extends({}, componentStyle[':active'], _windows4.default.pushTransform);
+      }
+
+      return _react2.default.createElement(
+        'button',
+        _extends({
+          ref: 'element',
+          type: type || 'button',
+          onClick: onClick,
+          style: componentStyle
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return Button;
+}(_react.Component), _class2.propTypes = _extends({}, _hidden.hiddenPropTypes, _windows.colorPropTypes, _windows2.themePropTypes, {
+  type: _react.PropTypes.string,
+  push: _react.PropTypes.bool,
+  onClick: _react.PropTypes.func
+}), _class2.contextTypes = _extends({}, _windows.colorContextTypes), _temp)) || _class) || _class) || _class);
+exports.default = Button;
+},{"../../color":69,"../../style/color/windows":95,"../../style/hidden":97,"../../style/theme/windows":100,"./styles/windows10":66,"radium":14,"react":342}],66:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  button: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default',
+    backgroundColor: '#cccccc',
+    outline: 'none',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: '#cccccc',
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: '32px',
+    paddingRight: '32px',
+    lineHeight: '28px',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    color: '#000000',
+
+    ':hover': {
+      color: '#000000',
+      borderColor: '#7a7a7a'
+    },
+
+    ':active': {
+      color: '#000000',
+      borderColor: '#999999',
+      backgroundColor: '#999999'
+    }
+  },
+
+  colorButton: {
+    color: '#ffffff',
+    borderColor: '#0078d7',
+    backgroundColor: '#0078d7',
+
+    ':hover': {
+      borderColor: '#004e8c'
+    },
+
+    ':active': {
+      borderColor: '#004e8c',
+      backgroundColor: '#004e8c'
+    }
+  },
+
+  pushTransform: {
+    transform: 'scale(0.97)',
+    transition: 'transform .1s ease-in'
+  }
+};
+},{}],67:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windows = require('../../style/color/windows');
+
+var _windows2 = require('../../style/theme/windows');
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _windows3 = require('./styles/windows10');
+
+var _windows4 = _interopRequireDefault(_windows3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Checkbox = (_dec = (0, _hidden2.default)(), _dec2 = (0, _windows.ColorContext)(), _dec3 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Checkbox, _Component);
+
+  function Checkbox(props) {
+    _classCallCheck(this, Checkbox);
+
+    var _this = _possibleConstructorReturn(this, (Checkbox.__proto__ || Object.getPrototypeOf(Checkbox)).call(this));
+
+    _this.handleChange = function (event) {
+      _this.setState({ checked: event.target.checked });
+      if (_this.props.onChange) {
+        _this.props.onChange(event);
+      }
+    };
+
+    _this.state = {
+      checked: props.defaultChecked === true
+    };
+    return _this;
+  }
+
+  _createClass(Checkbox, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var label = _props.label;
+      var color = _props.color;
+
+      var props = _objectWithoutProperties(_props, ['style', 'label', 'color']);
+
+      var componentStyle = _extends({}, _windows4.default.checkbox);
+      var checkedStyle = { display: 'none' };
+      var textStyle = _extends({}, _windows4.default.text);
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows4.default.checkboxDark);
+        textStyle = _extends({}, textStyle, _windows4.default.textDark);
+      }
+
+      if (this.state.checked) {
+        checkedStyle = _windows4.default.svg;
+        componentStyle = _extends({}, componentStyle, this.context.theme === 'dark' ? _windows4.default['checkboxDark:checked'] : _windows4.default['checkbox:checked']);
+
+        color = color ? color : this.context.color;
+        componentStyle = _extends({}, componentStyle, {
+          backgroundColor: color,
+          borderColor: color
+        });
+      }
+
+      if ((0, _radium.getState)(this.state, null, ':active')) {
+        componentStyle = _extends({}, componentStyle, this.context.theme === 'dark' ? _windows4.default['checkboxDark:active'] : _windows4.default['checkbox:active']);
+      } else if ((0, _radium.getState)(this.state, null, ':hover')) {
+        componentStyle = _extends({}, componentStyle, this.context.theme === 'dark' ? _windows4.default['checkboxDark:hover'] : _windows4.default['checkbox:hover']);
+      }
+
+      return _react2.default.createElement(
+        'div',
+        { style: _extends({}, _windows4.default.container, style) },
+        _react2.default.createElement(
+          'label',
+          { style: _windows4.default.label },
+          _react2.default.createElement(
+            'div',
+            { style: _windows4.default.inputWrapper },
+            _react2.default.createElement('input', _extends({
+              ref: 'element',
+              type: 'checkbox'
+            }, props, {
+              style: componentStyle,
+              onChange: this.handleChange
+            })),
+            _react2.default.createElement(
+              'svg',
+              { x: '0px', y: '0px', viewBox: '0 0 6.4 6.4', style: checkedStyle },
+              _react2.default.createElement('polygon', { fill: '#fff', points: '0,3.3 2.2,5.5 6.4,1.23 6.1,0.9 2.2,4.8 0.3,2.9 ' })
+            )
+          ),
+          _react2.default.createElement(
+            'span',
+            { style: textStyle },
+            label
+          )
+        )
+      );
+    }
+  }]);
+
+  return Checkbox;
+}(_react.Component), _class2.propTypes = _extends({}, _hidden.hiddenPropTypes, _windows.colorPropTypes, _windows2.themePropTypes, {
+  label: _react.PropTypes.string,
+  onChange: _react.PropTypes.func
+}), _class2.contextTypes = _extends({}, _windows.colorContextTypes, _windows2.themeContextTypes), _temp)) || _class) || _class) || _class) || _class);
+exports.default = Checkbox;
+},{"../../style/color/windows":95,"../../style/hidden":97,"../../style/theme/windows":100,"./styles/windows10":68,"radium":14,"react":342}],68:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  container: {
+    display: 'flex',
+    marginBottom: '22px'
+  },
+
+  label: {
+    display: 'flex',
+    alignItems: 'center',
+    position: 'relative',
+
+    ':hover': {},
+    ':active': {}
+  },
+
+  text: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    marginTop: '1px',
+    color: '#000000'
+  },
+
+  textDark: {
+    color: '#ffffff'
+  },
+
+  inputWrapper: {
+    position: 'relative',
+    marginRight: '3px',
+    paddingTop: '1px'
+  },
+
+  checkbox: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    outline: 'none',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(0, 0, 0, .8)',
+    padding: '8px',
+    color: '#fff',
+    verticalAlign: 'bottom',
+    marginRight: '6px',
+
+    ':focus': {
+      outline: 'none'
+    }
+  },
+
+  checkboxDark: {
+    borderColor: 'rgba(255, 255, 255, .82)'
+  },
+
+  'checkbox:active': {
+    borderColor: 'rgba(0, 0, 0, 0)',
+    backgroundColor: 'rgba(0, 0, 0, .57)'
+  },
+
+  'checkbox:hover': {
+    borderColor: 'rgba(0, 0, 0, 1)'
+  },
+
+  'checkbox:checked': {
+    backgroundColor: '#007CD1',
+    borderColor: '#007CD1'
+  },
+
+  'checkboxDark:active': {
+    borderColor: 'rgba(255, 255, 255, 0)',
+    backgroundColor: 'rgba(255, 255, 255, .63)'
+  },
+
+  'checkboxDark:hover': {
+    borderColor: 'rgba(255, 255, 255, 1)'
+  },
+
+  'checkboxDark:checked': {
+    backgroundColor: '#007CD1',
+    borderColor: '#007CD1'
+  },
+
+  svg: {
+    position: 'absolute',
+    top: '6px',
+    left: '5px',
+    color: '#fff',
+    height: '16px'
+  }
+};
+},{}],69:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.hexToRgb = hexToRgb;
+exports.transparentize = transparentize;
+exports.darkenColor = darkenColor;
+exports.ligthenColor = ligthenColor;
+exports.convertColor = convertColor;
+exports.isDarkColor = isDarkColor;
+function colorLuminance(hex, lum) {
+  // validate hex string
+  hex = String(hex).replace(/[^0-9a-f]/gi, '');
+  if (hex.length < 6) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  lum = lum || 0;
+
+  // convert to decimal and change luminosity
+  var rgb = '#',
+      c,
+      i;
+  for (i = 0; i < 3; i++) {
+    c = parseInt(hex.substr(i * 2, 2), 16);
+    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
+    rgb += ('00' + c).substr(c.length);
+  }
+
+  return rgb;
+}
+
+function hexToRgb(hex) {
+  var result = void 0;
+  if (hex.match(/^#.{3}$/)) {
+    result = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex);
+    result[1] += result[1];
+    result[2] += result[2];
+    result[3] += result[3];
+  } else {
+    result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  }
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+function transparentize(color, amount) {
+  var c = hexToRgb(color);
+  return 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', ' + Math.round((1 - amount) * 1000) / 1000 + ')';
+}
+
+function darkenColor(color, percent) {
+  return colorLuminance(color, -percent);
+}
+
+function ligthenColor(color) {
+  return color;
+}
+
+function convertColor(color) {
+  var colors = {
+    'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4', 'azure': '#f0ffff',
+    'beige': '#f5f5dc', 'bisque': '#ffe4c4', 'black': '#000000', 'blanchedalmond': '#ffebcd', 'blue': '#0000ff', 'blueviolet': '#8a2be2', 'brown': '#a52a2a', 'burlywood': '#deb887',
+    'cadetblue': '#5f9ea0', 'chartreuse': '#7fff00', 'chocolate': '#d2691e', 'coral': '#ff7f50', 'cornflowerblue': '#6495ed', 'cornsilk': '#fff8dc', 'crimson': '#dc143c', 'cyan': '#00ffff',
+    'darkblue': '#00008b', 'darkcyan': '#008b8b', 'darkgoldenrod': '#b8860b', 'darkgray': '#a9a9a9', 'darkgreen': '#006400', 'darkkhaki': '#bdb76b', 'darkmagenta': '#8b008b', 'darkolivegreen': '#556b2f',
+    'darkorange': '#ff8c00', 'darkorchid': '#9932cc', 'darkred': '#8b0000', 'darksalmon': '#e9967a', 'darkseagreen': '#8fbc8f', 'darkslateblue': '#483d8b', 'darkslategray': '#2f4f4f', 'darkturquoise': '#00ced1',
+    'darkviolet': '#9400d3', 'deeppink': '#ff1493', 'deepskyblue': '#00bfff', 'dimgray': '#696969', 'dodgerblue': '#1e90ff',
+    'firebrick': '#b22222', 'floralwhite': '#fffaf0', 'forestgreen': '#228b22', 'fuchsia': '#ff00ff',
+    'gainsboro': '#dcdcdc', 'ghostwhite': '#f8f8ff', 'gold': '#ffd700', 'goldenrod': '#daa520', 'gray': '#808080', 'green': '#008000', 'greenyellow': '#adff2f',
+    'honeydew': '#f0fff0', 'hotpink': '#ff69b4',
+    'indianred ': '#cd5c5c', 'indigo': '#4b0082', 'ivory': '#fffff0', 'khaki': '#f0e68c',
+    'lavender': '#e6e6fa', 'lavenderblush': '#fff0f5', 'lawngreen': '#7cfc00', 'lemonchiffon': '#fffacd', 'lightblue': '#add8e6', 'lightcoral': '#f08080', 'lightcyan': '#e0ffff', 'lightgoldenrodyellow': '#fafad2',
+    'lightgrey': '#d3d3d3', 'lightgreen': '#90ee90', 'lightpink': '#ffb6c1', 'lightsalmon': '#ffa07a', 'lightseagreen': '#20b2aa', 'lightskyblue': '#87cefa', 'lightslategray': '#778899', 'lightsteelblue': '#b0c4de',
+    'lightyellow': '#ffffe0', 'lime': '#00ff00', 'limegreen': '#32cd32', 'linen': '#faf0e6',
+    'magenta': '#ff00ff', 'maroon': '#800000', 'mediumaquamarine': '#66cdaa', 'mediumblue': '#0000cd', 'mediumorchid': '#ba55d3', 'mediumpurple': '#9370d8', 'mediumseagreen': '#3cb371', 'mediumslateblue': '#7b68ee',
+    'mediumspringgreen': '#00fa9a', 'mediumturquoise': '#48d1cc', 'mediumvioletred': '#c71585', 'midnightblue': '#191970', 'mintcream': '#f5fffa', 'mistyrose': '#ffe4e1', 'moccasin': '#ffe4b5',
+    'navajowhite': '#ffdead', 'navy': '#000080',
+    'oldlace': '#fdf5e6', 'olive': '#808000', 'olivedrab': '#6b8e23', 'orange': '#ffa500', 'orangered': '#ff4500', 'orchid': '#da70d6',
+    'palegoldenrod': '#eee8aa', 'palegreen': '#98fb98', 'paleturquoise': '#afeeee', 'palevioletred': '#d87093', 'papayawhip': '#ffefd5', 'peachpuff': '#ffdab9', 'peru': '#cd853f', 'pink': '#ffc0cb', 'plum': '#dda0dd', 'powderblue': '#b0e0e6', 'purple': '#800080',
+    'red': '#ff0000', 'rosybrown': '#bc8f8f', 'royalblue': '#4169e1',
+    'saddlebrown': '#8b4513', 'salmon': '#fa8072', 'sandybrown': '#f4a460', 'seagreen': '#2e8b57', 'seashell': '#fff5ee', 'sienna': '#a0522d', 'silver': '#c0c0c0', 'skyblue': '#87ceeb', 'slateblue': '#6a5acd', 'slategray': '#708090', 'snow': '#fffafa', 'springgreen': '#00ff7f', 'steelblue': '#4682b4',
+    'tan': '#d2b48c', 'teal': '#008080', 'thistle': '#d8bfd8', 'tomato': '#ff6347', 'turquoise': '#40e0d0',
+    'violet': '#ee82ee',
+    'wheat': '#f5deb3', 'white': '#ffffff', 'whitesmoke': '#f5f5f5',
+    'yellow': '#ffff00', 'yellowgreen': '#9acd32'
+  };
+
+  if (typeof color === 'string' && typeof colors[color.toLowerCase()] != 'undefined') {
+    return colors[color.toLowerCase()];
+  }
+  return color;
+}
+
+function isDarkColor(color) {
+  var c = convertColor(color).substring(1); // strip #
+  var rgb = parseInt(c, 16); // convert rrggbb to decimal
+  var r = rgb >> 16 & 0xff; // extract red
+  var g = rgb >> 8 & 0xff; // extract green
+  var b = rgb >> 0 & 0xff; // extract blue
+
+  var luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // per ITU-R BT.709
+
+  return luma < 40;
+}
+},{}],70:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _text = require('../../text/windows/text');
+
+var _text2 = _interopRequireDefault(_text);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _text2.default;
+},{"../../text/windows/text":105}],71:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _color = require('../../../color');
+
+var _windows = require('../../../style/color/windows');
+
+var _windows2 = require('../../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  details: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    position: 'relative',
+    flex: '1'
+  }
+};
+
+var Details = (_dec = (0, _windows.ColorContext)(), _dec2 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Details, _Component);
+
+  function Details() {
+    _classCallCheck(this, Details);
+
+    return _possibleConstructorReturn(this, (Details.__proto__ || Object.getPrototypeOf(Details)).apply(this, arguments));
+  }
+
+  _createClass(Details, [{
+    key: 'getChildContext',
+    value: function getChildContext() {
+      return {
+        background: typeof this.props.background === 'string' ? this.props.background : this.context.color
+      };
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+      var background = _props.background;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style', 'background']);
+
+      delete props.index;
+      var componentStyle = _extends({}, styles.details, style);
+
+      if (background === true) {
+        componentStyle.backgroundColor = (0, _color.convertColor)(this.context.color);
+      } else if (typeof background === 'string') {
+        componentStyle.backgroundColor = (0, _color.convertColor)(background);
+      }
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return Details;
+}(_react.Component), _class2.propTypes = _extends({}, _windows.colorPropTypes, _windows2.themePropTypes, {
+  background: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+}), _class2.childContextTypes = {
+  background: _react.PropTypes.string
+}, _class2.contextTypes = _extends({}, _windows.colorContextTypes), _temp)) || _class) || _class);
+exports.default = Details;
+},{"../../../color":69,"../../../style/color/windows":95,"../../../style/theme/windows":100,"react":342}],72:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _master = require('../master/master');
+
+var _master2 = _interopRequireDefault(_master);
+
+var _details = require('../details/details');
+
+var _details2 = _interopRequireDefault(_details);
+
+var _windows = require('../../../style/color/windows');
+
+var _windows2 = require('../../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  display: 'flex',
+  flexWrap: 'nowrap',
+  position: 'relative',
+  flex: '1'
+};
+
+var warnOnceMaster = false;
+var warnOnceDetails = false;
+function applyChildenClasses() {
+  return function (ComposedComponent) {
+    var nextMaster = _master2.default;
+    ComposedComponent.prototype.Master = ComposedComponent.Master = function () {
+      if (!warnOnceMaster) {
+        warnOnceMaster = true;
+        console.warn('React Desktop: Using MasterDetailsView.Item.Master is deprecated, import MasterDetailsViewItemMaster instead.');
+      }
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return new (Function.prototype.bind.apply(nextMaster, [null].concat(args)))();
+    };
+    var nextDetails = _details2.default;
+    ComposedComponent.prototype.Details = ComposedComponent.Details = function () {
+      if (!warnOnceDetails) {
+        warnOnceDetails = true;
+        console.warn('React Desktop: Using MasterDetailsView.Item.Details is deprecated, import MasterDetailsViewItemDetails instead.');
+      }
+
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      return new (Function.prototype.bind.apply(nextDetails, [null].concat(args)))();
+    };
+    return ComposedComponent;
+  };
+}
+
+var Item = (_dec = applyChildenClasses(), _dec2 = (0, _windows.ColorContext)(), _dec3 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Item, _Component);
+
+  function Item(props, context, updater) {
+    _classCallCheck(this, Item);
+
+    var _this = _possibleConstructorReturn(this, (Item.__proto__ || Object.getPrototypeOf(Item)).call(this, props, context, updater));
+
+    _this.state = {
+      selected: props.selected ? props.selected : false
+    };
+    return _this;
+  }
+
+  _createClass(Item, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style']);
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: _extends({}, styles, style)
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return Item;
+}(_react.Component), _class2.propTypes = _extends({}, _windows.colorPropTypes, _windows2.themePropTypes, {
+  selected: _react.PropTypes.bool
+}), _temp)) || _class) || _class) || _class);
+exports.default = Item;
+},{"../../../style/color/windows":95,"../../../style/theme/windows":100,"../details/details":71,"../master/master":74,"react":342}],73:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _master = require('./master/master');
+
+var _master2 = _interopRequireDefault(_master);
+
+var _details = require('./details/details');
+
+var _details2 = _interopRequireDefault(_details);
+
+var _pane = require('./pane');
+
+var _pane2 = _interopRequireDefault(_pane);
+
+var _item = require('./item/item');
+
+var _item2 = _interopRequireDefault(_item);
+
+var _windows = require('../../style/color/windows');
+
+var _windows2 = require('../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  container: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    position: 'relative',
+    flex: '1',
+    background: 'white',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default'
+  },
+
+  containerDark: {
+    background: '#171717'
+  }
+};
+
+var warnOnce = false;
+function applyChildenClasses() {
+  return function (ComposedComponent) {
+    var nextItem = _item2.default;
+    var item = function item() {
+      if (!warnOnce) {
+        warnOnce = true;
+        console.warn('React Desktop: Using MasterDetailsView.Item is deprecated, import MasterDetailsViewItem instead.');
+      }
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return new (Function.prototype.bind.apply(nextItem, [null].concat(args)))();
+    };
+
+    item.prototype.Master = item.Master = _master2.default;
+    item.prototype.Details = item.Details = _details2.default;
+    ComposedComponent.prototype.Item = ComposedComponent.Item = item;
+    return ComposedComponent;
+  };
+}
+
+var MasterDetailsView = (_dec = applyChildenClasses(), _dec2 = (0, _windows.ColorContext)(), _dec3 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = (_temp = _class2 = function (_Component) {
+  _inherits(MasterDetailsView, _Component);
+
+  function MasterDetailsView(props, context, updater) {
+    _classCallCheck(this, MasterDetailsView);
+
+    var _this = _possibleConstructorReturn(this, (MasterDetailsView.__proto__ || Object.getPrototypeOf(MasterDetailsView)).call(this, props, context, updater));
+
+    _this.masters = [];
+    _this.details = [];
+
+    _this.state = {
+      selected: 0
+    };
+    _this.filterChildren(props.children);
+    return _this;
+  }
+
+  _createClass(MasterDetailsView, [{
+    key: 'getChildContext',
+    value: function getChildContext() {
+      return {
+        masterDetails: this
+      };
+    }
+  }, {
+    key: 'select',
+    value: function select(index) {
+      this.setState({ selected: index });
+      for (var prop in this.refs) {
+        if (this.refs.hasOwnProperty(prop) && prop.indexOf('master') === 0) {
+          this.refs[prop].setState({ selected: prop === 'master' + index });
+        }
+      }
+    }
+  }, {
+    key: 'filterChildren',
+    value: function filterChildren(children) {
+      var _this2 = this;
+
+      this.maxWidth = null;
+      _react.Children.map(children, function (item, key) {
+        _react.Children.map(item.props.children, function (child) {
+          if (child.type === _master2.default) {
+            if (child.props.width !== undefined && child.props.width > _this2.maxWidth) {
+              _this2.maxWidth = child.props.width;
+            }
+            _this2.masters = [].concat(_toConsumableArray(_this2.masters), [(0, _react.cloneElement)(child, { key: key, ref: 'master' + key, index: key })]);
+          } else if (child.type === _details2.default) {
+            _this2.details = [].concat(_toConsumableArray(_this2.details), [(0, _react.cloneElement)(child, { key: key, ref: 'details' + key, index: key })]);
+          }
+        });
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+
+      var props = _objectWithoutProperties(_props, ['style']);
+
+      var componentStyle = _extends({}, styles.container, style);
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, styles.containerDark, style);
+      }
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        _react2.default.createElement(
+          _pane2.default,
+          { width: this.maxWidth },
+          this.renderMasters()
+        ),
+        this.renderDetail()
+      );
+    }
+  }, {
+    key: 'renderMasters',
+    value: function renderMasters() {
+      var _this3 = this;
+
+      var children = [];
+      this.masters.forEach(function (item, index) {
+        children.push(index === _this3.state.selected ? (0, _react.cloneElement)(item, { selected: true }) : item);
+      });
+      return children;
+    }
+  }, {
+    key: 'renderDetail',
+    value: function renderDetail() {
+      var _this4 = this;
+
+      var children = null;
+      this.details.forEach(function (item, index) {
+        if (index === _this4.state.selected) children = item;
+      });
+      return children;
+    }
+  }]);
+
+  return MasterDetailsView;
+}(_react.Component), _class2.propTypes = _extends({}, _windows.colorPropTypes, _windows2.themePropTypes), _class2.childContextTypes = {
+  masterDetails: _react.PropTypes.object
+}, _class2.contextTypes = _extends({}, _windows2.themeContextTypes), _temp)) || _class) || _class) || _class);
+exports.default = MasterDetailsView;
+},{"../../style/color/windows":95,"../../style/theme/windows":100,"./details/details":71,"./item/item":72,"./master/master":74,"./pane":75,"react":342}],74:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class, _class2, _temp2;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleHelper = require('../../../styleHelper');
+
+var _color = require('../../../color');
+
+var _windows = require('../../../style/color/windows');
+
+var _windows2 = require('../../../style/theme/windows');
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  master: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    position: 'relative',
+    width: '320px',
+    boxSizing: 'border-box',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    ':hover': {
+      backgroundColor: 'rgba(0, 0, 0, .1)'
+    },
+    ':active': {
+      backgroundColor: 'rgba(0, 0, 0, .2)'
+    }
+  },
+
+  masterDark: {
+    ':hover': {
+      backgroundColor: 'rgba(255, 255, 255, .1)'
+    },
+    ':active': {
+      backgroundColor: 'rgba(255, 255, 255, .2)'
+    }
+  },
+
+  masterSpan: {
+    padding: '0 12px',
+    lineHeight: '50px',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '18px',
+    color: '#000000',
+    width: '320px',
+    boxSizing: 'border-box',
+
+    transition: 'transform .1s ease-in',
+    ':hover': {
+      transition: 'transform .1s ease-in'
+    }
+  },
+
+  masterSpanDark: {
+    color: 'white'
+  },
+
+  masterSpanWithPush: {
+    ':active': {
+      transform: 'scale(0.97)',
+      transition: 'transform 0s ease-in'
+    }
+  }
+};
+
+var Master = (_dec = (0, _windows.ColorContext)(), _dec2 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = (0, _radium2.default)(_class = (_temp2 = _class2 = function (_Component) {
+  _inherits(Master, _Component);
+
+  function Master() {
+    var _ref;
+
+    var _temp, _this, _ret;
+
+    _classCallCheck(this, Master);
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Master.__proto__ || Object.getPrototypeOf(Master)).call.apply(_ref, [this].concat(args))), _this), _this.select = function () {
+      _this.context.masterDetails.select(_this.props.index);
+    }, _temp), _possibleConstructorReturn(_this, _ret);
+  }
+
+  _createClass(Master, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+      var selected = _props.selected;
+      var push = _props.push;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style', 'selected', 'push']);
+
+      delete props.index;
+      var componentStyle = _extends({}, styles.master, style);
+      var spanStyle = _extends({}, styles.masterSpan);
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, styles.masterDark);
+        spanStyle = _extends({}, spanStyle, styles.masterSpanDark);
+      }
+
+      if (this.props.width) {
+        componentStyle.width = (0, _styleHelper.parseDimension)(this.props.width);
+        spanStyle.width = (0, _styleHelper.parseDimension)(this.props.width);
+      }
+
+      if (push) {
+        spanStyle[':active'] = _extends({}, spanStyle[':active'], styles.masterSpanWithPush[':active']);
+      }
+
+      if (selected) {
+        var c = (0, _color.hexToRgb)((0, _color.convertColor)(this.context.color));
+        componentStyle = _extends({}, componentStyle, {
+          backgroundColor: 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', .4)',
+          ':hover': _extends({}, componentStyle[':hover'], {
+            backgroundColor: 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', .6)'
+          }),
+          ':active': _extends({}, componentStyle[':active'], {
+            backgroundColor: 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', .7)'
+          })
+        });
+      }
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle,
+          onClick: this.select
+        }, props),
+        _react2.default.createElement(
+          'span',
+          { key: 'span', style: spanStyle },
+          children
+        )
+      );
+    }
+  }]);
+
+  return Master;
+}(_react.Component), _class2.propTypes = _extends({}, _windows.colorPropTypes, _windows2.themePropTypes, {
+  selected: _react.PropTypes.bool,
+  width: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  push: _react.PropTypes.bool
+}), _class2.contextTypes = _extends({}, _windows.colorContextTypes, _windows2.themeContextTypes, {
+  id: _react.PropTypes.string,
+  width: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  push: _react.PropTypes.bool,
+  masterDetails: _react.PropTypes.object
+}), _temp2)) || _class) || _class) || _class);
+exports.default = Master;
+},{"../../../color":69,"../../../style/color/windows":95,"../../../style/theme/windows":100,"../../../styleHelper":92,"radium":14,"react":342}],75:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleHelper = require('../../styleHelper');
+
+var _windows = require('../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  pane: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexWrap: 'nowrap',
+    position: 'relative',
+    flex: '0 0 320px',
+    width: '320px'
+  },
+
+  paneDark: {}
+};
+
+var Pane = (_dec = (0, _windows.ThemeContext)(), _dec(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Pane, _Component);
+
+  function Pane() {
+    _classCallCheck(this, Pane);
+
+    return _possibleConstructorReturn(this, (Pane.__proto__ || Object.getPrototypeOf(Pane)).apply(this, arguments));
+  }
+
+  _createClass(Pane, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style']);
+
+      var componentStyle = _extends({}, styles.pane, style);
+
+      if (this.props.width) {
+        componentStyle.width = (0, _styleHelper.parseDimension)(this.props.width);
+        componentStyle.flex = '0 0 ' + (0, _styleHelper.parseDimension)(this.props.width);
+      }
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, styles.paneDark);
+      }
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return Pane;
+}(_react.Component), _class2.contextTypes = _extends({}, _windows.themeContextTypes), _temp)) || _class);
+exports.default = Pane;
+},{"../../style/theme/windows":100,"../../styleHelper":92,"react":342}],76:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+exports.windowIsFocused = windowIsFocused;
+window.addEventListener('focus', windowFocus);
+window.addEventListener('blur', windowBlur);
+
+var isWindowFocused = true;
+
+if ((typeof document === 'undefined' ? 'undefined' : _typeof(document)) === 'object' && typeof document.hasFocus === 'function') {
+  isWindowFocused = document.hasFocus();
+}
+
+function windowFocus() {
+  isWindowFocused = true;
+}
+
+function windowBlur() {
+  isWindowFocused = false;
+}
+
+function windowIsFocused() {
+  return isWindowFocused;
+}
+},{}],77:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _padding = require('../../../../style/padding');
+
+var _padding2 = _interopRequireDefault(_padding);
+
+var _margin = require('../../../../style/margin');
+
+var _margin2 = _interopRequireDefault(_margin);
+
+var _windows = require('../../../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _alignment = require('../../../../style/alignment');
+
+var _alignment2 = _interopRequireDefault(_alignment);
+
+var _windows3 = require('../../style/windows10');
+
+var _windows4 = _interopRequireDefault(_windows3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Content = (_dec = (0, _padding2.default)(), _dec2 = (0, _margin2.default)(), _dec3 = (0, _windows2.default)(), _dec4 = (0, _alignment2.default)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Content, _Component);
+
+  function Content() {
+    _classCallCheck(this, Content);
+
+    return _possibleConstructorReturn(this, (Content.__proto__ || Object.getPrototypeOf(Content)).apply(this, arguments));
+  }
+
+  _createClass(Content, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var content = _props.content;
+      var style = _props.style;
+
+      var props = _objectWithoutProperties(_props, ['content', 'style']);
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: _extends({}, _windows4.default.content, style)
+        }, props),
+        content
+      );
+    }
+  }]);
+
+  return Content;
+}(_react.Component), _class2.propTypes = _extends({}, _padding.paddingPropTypes, _margin.marginPropTypes, _windows.backgroundPropTypes, _alignment.alignmentPropTypes, {
+  content: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array])
+}), _temp)) || _class) || _class) || _class) || _class);
+exports.default = Content;
+},{"../../../../style/alignment":93,"../../../../style/background/windows":94,"../../../../style/margin":98,"../../../../style/padding":99,"../../style/windows10":85,"react":342}],78:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _padding = require('../../../style/padding');
+
+var _padding2 = _interopRequireDefault(_padding);
+
+var _margin = require('../../../style/margin');
+
+var _margin2 = _interopRequireDefault(_margin);
+
+var _windows = require('../../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _alignment = require('../../../style/alignment');
+
+var _alignment2 = _interopRequireDefault(_alignment);
+
+var _title = require('./title/title');
+
+var _title2 = _interopRequireDefault(_title);
+
+var _content = require('./content/content');
+
+var _content2 = _interopRequireDefault(_content);
+
+var _windows3 = require('../style/windows10');
+
+var _windows4 = _interopRequireDefault(_windows3);
+
+var _radium = require('radium');
+
+var _windows5 = require('../../../style/color/windows');
+
+var _windows6 = require('../../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Item = (_dec = (0, _padding2.default)(), _dec2 = (0, _margin2.default)(), _dec3 = (0, _windows2.default)(), _dec4 = (0, _alignment2.default)(), _dec5 = (0, _windows5.ColorContext)(), _dec6 = (0, _windows6.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Item, _Component);
+
+  function Item() {
+    _classCallCheck(this, Item);
+
+    var _this = _possibleConstructorReturn(this, (Item.__proto__ || Object.getPrototypeOf(Item)).call(this));
+
+    _this.state = {
+      prevTitle: null
+    };
+    return _this;
+  }
+
+  _createClass(Item, [{
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      if (this.props.title !== nextProps.title) {
+        this.setState({ prevTitle: this.props.title });
+      }
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var title = _props.title;
+      var paneTheme = _props.paneTheme;
+
+      var props = _objectWithoutProperties(_props, ['children', 'title', 'paneTheme']);
+
+      delete props.icon;
+      delete props.push;
+      delete props.onSelect;
+      delete props.selected;
+
+      return _react2.default.createElement(
+        'div',
+        {
+          style: _windows4.default.navPaneItem
+        },
+        _react2.default.createElement(
+          'div',
+          { style: _windows4.default.contentWrapper },
+          _react2.default.createElement(
+            _radium.StyleRoot,
+            null,
+            _react2.default.createElement(_title2.default, {
+              key: title,
+              title: title,
+              theme: paneTheme,
+              prevTitle: this.state.prevTitle
+            })
+          ),
+          _react2.default.createElement(_content2.default, _extends({
+            content: children
+          }, props))
+        )
+      );
+    }
+  }]);
+
+  return Item;
+}(_react.Component), _class2.propTypes = _extends({}, _windows5.colorPropTypes, _windows6.themePropTypes, _padding.paddingPropTypes, _margin.marginPropTypes, _windows.backgroundPropTypes, _alignment.alignmentPropTypes, {
+  title: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array]),
+  icon: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array]),
+  push: _react.PropTypes.bool,
+  onSelect: _react.PropTypes.func,
+  selected: _react.PropTypes.bool,
+  paneTheme: _react.PropTypes.string
+}), _temp)) || _class) || _class) || _class) || _class) || _class) || _class);
+exports.default = Item;
+},{"../../../style/alignment":93,"../../../style/background/windows":94,"../../../style/color/windows":95,"../../../style/margin":98,"../../../style/padding":99,"../../../style/theme/windows":100,"../style/windows10":85,"./content/content":77,"./title/title":79,"radium":14,"react":342}],79:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _windows = require('../../style/windows10');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var appear = (0, _radium.keyframes)({
+  '0%': {
+    opacity: 0
+  },
+  '29%': {
+    opacity: 0,
+    transform: 'translateY(9px)'
+  },
+  '30%': {
+    opacity: .35,
+    transform: 'translateY(9px)'
+  },
+  '100%': {
+    opacity: 1,
+    transform: 'translateY(0)'
+  }
+}, 'Title');
+
+var fadeOut = (0, _radium.keyframes)({
+  '0%': {
+    opacity: 1
+  },
+  '100%': {
+    opacity: 0
+  }
+}, 'span');
+
+_windows2.default.titleAnimation = {
+  animation: 'x 300ms forwards',
+  animationName: appear
+};
+
+_windows2.default.fadeSpanStyle = {
+  position: 'absolute',
+  top: '0px',
+  left: '0px',
+  animation: 'x 100ms forwards',
+  animationName: fadeOut
+};
+
+var Title = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Title, _Component);
+
+  function Title() {
+    _classCallCheck(this, Title);
+
+    return _possibleConstructorReturn(this, (Title.__proto__ || Object.getPrototypeOf(Title)).apply(this, arguments));
+  }
+
+  _createClass(Title, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var title = _props.title;
+      var prevTitle = _props.prevTitle;
+
+
+      var componentStyle = _extends({}, _windows2.default.title);
+      var fadeSpanStyle = _extends({}, _windows2.default.title);
+      var titleStyle = {};
+
+      if (this.props.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows2.default.titleDark);
+        fadeSpanStyle = _extends({}, fadeSpanStyle, _windows2.default.titleDark);
+      }
+
+      if (prevTitle && prevTitle !== title) {
+        fadeSpanStyle = _extends({}, fadeSpanStyle, _windows2.default.fadeSpanStyle);
+        titleStyle = _extends({}, titleStyle, { opacity: 0 }, _windows2.default.titleAnimation);
+      }
+
+      var fadeSpan = void 0;
+      if (prevTitle) {
+        fadeSpan = _react2.default.createElement(
+          'span',
+          { style: fadeSpanStyle },
+          prevTitle
+        );
+      }
+
+      return _react2.default.createElement(
+        'div',
+        {
+          style: componentStyle
+        },
+        fadeSpan,
+        _react2.default.createElement(
+          'span',
+          { style: titleStyle },
+          title
+        )
+      );
+    }
+  }]);
+
+  return Title;
+}(_react.Component), _class2.propTypes = {
+  theme: _react.PropTypes.string,
+  title: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array])
+}, _temp)) || _class;
+
+exports.default = Title;
+},{"../../style/windows10":85,"radium":14,"react":342}],80:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _pane = require('./pane/pane');
+
+var _pane2 = _interopRequireDefault(_pane);
+
+var _item = require('./item/item');
+
+var _item2 = _interopRequireDefault(_item);
+
+var _windows = require('./style/windows10');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _windows3 = require('../../style/color/windows');
+
+var _windows4 = require('../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var warnOnce = false;
+function applyChildenClasses() {
+  return function (ComposedComponent) {
+    var nextItem = _item2.default;
+    ComposedComponent.prototype.Item = ComposedComponent.Item = function () {
+      if (!warnOnce) {
+        warnOnce = true;
+        console.warn('React Desktop: Using NavPane.Item is deprecated, import NavPaneItem instead.');
+      }
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return new (Function.prototype.bind.apply(nextItem, [null].concat(args)))();
+    };
+    return ComposedComponent;
+  };
+}
+
+var NavPane = (_dec = applyChildenClasses(), _dec2 = (0, _windows3.ColorContext)(), _dec3 = (0, _windows4.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = (_temp = _class2 = function (_Component) {
+  _inherits(NavPane, _Component);
+
+  function NavPane() {
+    _classCallCheck(this, NavPane);
+
+    return _possibleConstructorReturn(this, (NavPane.__proto__ || Object.getPrototypeOf(NavPane)).apply(this, arguments));
+  }
+
+  _createClass(NavPane, [{
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        { style: _windows2.default.navPane },
+        _react2.default.createElement(_pane2.default, {
+          items: this.props.children,
+          canPaneToggle: this.props.canPaneToggle,
+          onPaneToggle: this.props.onPaneToggle,
+          defaultIsPaneExpanded: this.props.defaultIsPaneExpanded,
+          paneCompactedLength: this.props.paneCompactedLength,
+          paneExpandedLength: this.props.paneExpandedLength
+        }),
+        this.renderContent()
+      );
+    }
+  }, {
+    key: 'renderContent',
+    value: function renderContent() {
+      var content = null;
+      _react.Children.map(this.props.children, function (child) {
+        if (child.props.selected) content = child;
+      });
+      return content ? (0, _react.cloneElement)(content, _extends({}, content.props, { paneTheme: this.context.theme })) : null;
+    }
+  }]);
+
+  return NavPane;
+}(_react.Component), _class2.propTypes = _extends({}, _windows3.colorPropTypes, _windows4.themePropTypes, {
+  canPaneToggle: _react.PropTypes.bool,
+  onPaneToggle: _react.PropTypes.func,
+  defaultIsPaneExpanded: _react.PropTypes.bool,
+  paneCompactedLength: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paneExpandedLength: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+}), _class2.contextTypes = _extends({}, _windows4.themeContextTypes), _temp)) || _class) || _class) || _class);
+exports.default = NavPane;
+},{"../../style/color/windows":95,"../../style/theme/windows":100,"./item/item":78,"./pane/pane":83,"./style/windows10":85,"react":342}],81:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _color = require('../../../../color');
+
+var _windows = require('../../../../style/color/windows');
+
+var _windows2 = require('../../../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  svg: {
+    ':hover': {},
+    ':active': {}
+  }
+};
+
+var Button = (_dec = (0, _windows.ColorContext)(), _dec2 = (0, _windows2.ThemeContext)(), _dec(_class = _dec2(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Button, _Component);
+
+  function Button() {
+    _classCallCheck(this, Button);
+
+    return _possibleConstructorReturn(this, (Button.__proto__ || Object.getPrototypeOf(Button)).apply(this, arguments));
+  }
+
+  _createClass(Button, [{
+    key: 'render',
+    value: function render() {
+      var fill = this.context.theme === 'dark' ? '#ffffff' : '#000000';
+
+      if ((0, _radium.getState)(this.state, null, ':active')) {
+        fill = (0, _color.transparentize)(this.context.color, .1);
+      } else if ((0, _radium.getState)(this.state, null, ':hover')) {
+        fill = (0, _color.transparentize)(this.context.color, .2);
+      }
+
+      return _react2.default.createElement(
+        'svg',
+        {
+          x: '0px', y: '0px', viewBox: '0 0 20 12.5',
+          onClick: this.props.onClick,
+          style: _extends({}, styles.svg, this.props.style)
+        },
+        _react2.default.createElement('path', {
+          fill: fill,
+          fillRule: 'evenodd',
+          clipRule: 'evenodd',
+          d: 'M0,12.5h20V11H0V12.5z M0,7h20V5.5H0V7z M0,0v1.5h20V0H0z'
+        })
+      );
+    }
+  }]);
+
+  return Button;
+}(_react.Component), _class2.propTypes = {
+  onClick: _react.PropTypes.func
+}, _class2.contextTypes = _extends({}, _windows.colorContextTypes, _windows2.themeContextTypes), _temp)) || _class) || _class) || _class);
+exports.default = Button;
+},{"../../../../color":69,"../../../../style/color/windows":95,"../../../../style/theme/windows":100,"radium":14,"react":342}],82:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windows = require('../style/windows10');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _color = require('../../../../color');
+
+var _windows3 = require('../../../../style/color/windows');
+
+var _windows4 = require('../../../../style/theme/windows');
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Item = (_dec = (0, _windows3.ColorContext)(), _dec2 = (0, _windows4.ThemeContext)(), _dec(_class = _dec2(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Item, _Component);
+
+  function Item() {
+    _classCallCheck(this, Item);
+
+    return _possibleConstructorReturn(this, (Item.__proto__ || Object.getPrototypeOf(Item)).apply(this, arguments));
+  }
+
+  _createClass(Item, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var title = _props.title;
+      var icon = _props.icon;
+      var selected = _props.selected;
+      var onSelect = _props.onSelect;
+      var push = _props.push;
+      var isPaneExpanded = _props.isPaneExpanded;
+
+
+      var componentStyle = _windows2.default.anchor;
+      var spanStyle = _windows2.default.span;
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows2.default.anchorDark);
+        spanStyle = _extends({}, spanStyle, _windows2.default.spanDark);
+      }
+
+      if (selected) {
+        componentStyle = _extends({}, componentStyle, {
+          backgroundColor: (0, _color.transparentize)(this.context.color, .4),
+          ':hover': _extends({}, componentStyle[':hover'], {
+            backgroundColor: (0, _color.transparentize)(this.context.color, .2)
+          }),
+          ':active': _extends({}, componentStyle[':active'], {
+            backgroundColor: (0, _color.transparentize)(this.context.color, .1)
+          })
+        });
+      }
+
+      if (push) {
+        spanStyle[':hover'] = _extends({}, spanStyle[':hover'], _windows2.default.pushTransformHover);
+        spanStyle[':active'] = _extends({}, spanStyle[':active'], _windows2.default.pushTransformActive);
+      }
+
+      return _react2.default.createElement(
+        'a',
+        {
+          onClick: onSelect,
+          style: componentStyle
+        },
+        _react2.default.createElement(
+          'span',
+          {
+            ref: 'span',
+            style: spanStyle
+          },
+          icon ? _react2.default.createElement(
+            'i',
+            { style: _windows2.default.anchorIcon },
+            icon
+          ) : null,
+          isPaneExpanded ? _react2.default.createElement(
+            'span',
+            { style: _windows2.default.anchorTitle },
+            title
+          ) : null
+        )
+      );
+    }
+  }]);
+
+  return Item;
+}(_react.Component), _class2.propTypes = {
+  isPaneExpanded: _react.PropTypes.bool.isRequired,
+  title: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array]),
+  icon: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array]),
+  push: _react.PropTypes.bool,
+  onSelect: _react.PropTypes.func,
+  selected: _react.PropTypes.bool
+}, _class2.contextTypes = _extends({}, _windows3.colorContextTypes, _windows4.themeContextTypes), _temp)) || _class) || _class) || _class);
+exports.default = Item;
+},{"../../../../color":69,"../../../../style/color/windows":95,"../../../../style/theme/windows":100,"../style/windows10":84,"radium":14,"react":342}],83:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _item = require('./item/item');
+
+var _item2 = _interopRequireDefault(_item);
+
+var _button = require('./button/button');
+
+var _button2 = _interopRequireDefault(_button);
+
+var _windows = require('./style/windows10');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Pane = (_temp = _class = function (_Component) {
+  _inherits(Pane, _Component);
+
+  function Pane(props) {
+    var _ref;
+
+    _classCallCheck(this, Pane);
+
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    var _this = _possibleConstructorReturn(this, (_ref = Pane.__proto__ || Object.getPrototypeOf(Pane)).call.apply(_ref, [this, props].concat(args)));
+
+    _this.toggleOpen = function () {
+      if (_this.props.onPaneToggle) _this.props.onPaneToggle(!_this.state.isPaneExpanded);
+      _this.setState({ isPaneExpanded: !_this.state.isPaneExpanded });
+    };
+
+    _this.state = {
+      isPaneExpanded: props.defaultIsPaneExpanded
+    };
+    return _this;
+  }
+
+  _createClass(Pane, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var canPaneToggle = _props.canPaneToggle;
+      var paneCompactedLength = _props.paneCompactedLength;
+      var paneExpandedLength = _props.paneExpandedLength;
+
+
+      var button = !canPaneToggle ? null : _react2.default.createElement(_button2.default, { style: _windows2.default.buttonStyle, onClick: this.toggleOpen });
+
+      var componentStyle = _extends({}, _windows2.default.pane);
+
+      if (canPaneToggle) {
+        if (this.state.isPaneExpanded) componentStyle.width = paneExpandedLength;else componentStyle.width = paneCompactedLength;
+      } else {
+        componentStyle.width = paneExpandedLength;
+      }
+
+      return _react2.default.createElement(
+        'div',
+        {
+          style: componentStyle
+        },
+        _react2.default.createElement('div', { style: _windows2.default.padding }),
+        button,
+        this.renderItems()
+      );
+    }
+  }, {
+    key: 'renderItems',
+    value: function renderItems() {
+      var _this2 = this;
+
+      return _react.Children.map(this.props.items, function (item, index) {
+        return _react2.default.createElement(_item2.default, {
+          key: index,
+          isPaneExpanded: _this2.state.isPaneExpanded,
+          title: item.props.title,
+          icon: item.props.icon,
+          push: item.props.push,
+          onSelect: item.props.onSelect,
+          selected: item.props.selected
+        });
+      });
+    }
+  }]);
+
+  return Pane;
+}(_react.Component), _class.Item = _item2.default, _class.propTypes = {
+  items: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.element, _react.PropTypes.array]),
+  canPaneToggle: _react.PropTypes.bool,
+  onPaneToggle: _react.PropTypes.func,
+  defaultIsPaneExpanded: _react.PropTypes.bool,
+  paneCompactedLength: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paneExpandedLength: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+}, _class.defaultProps = {
+  canPaneToggle: true,
+  defaultIsPaneExpanded: true,
+  paneCompactedLength: '48px',
+  paneExpandedLength: '200px'
+}, _temp);
+exports.default = Pane;
+},{"./button/button":81,"./item/item":82,"./style/windows10":84,"react":342}],84:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  pane: {
+    cursor: 'default',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    display: 'flex',
+    position: 'relative',
+    flexGrow: '0',
+    flexShrink: '0',
+    flexDirection: 'column',
+    overflow: 'hidden'
+  },
+
+  padding: {
+    height: '48px'
+  },
+
+  buttonStyle: {
+    position: 'absolute',
+    padding: '8px 10px',
+    top: '7px',
+    left: '4px',
+    width: '20px',
+    height: '20px'
+  },
+
+  anchor: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '44px',
+
+    ':hover': {
+      backgroundColor: 'rgba(0, 0, 0, .1)'
+    },
+    ':active': {
+      backgroundColor: 'rgba(0, 0, 0, .2)'
+    }
+  },
+
+  anchorDark: {
+    ':hover': {
+      backgroundColor: 'rgba(255, 255, 255, .1)'
+    },
+    ':active': {
+      backgroundColor: 'rgba(255, 255, 255, .2)'
+    }
+  },
+
+  anchorTitle: {},
+
+  anchorIcon: {
+    marginRight: '8px',
+    height: '44px',
+    display: 'flex',
+    alignItems: 'center'
+  },
+
+  span: {
+    display: 'flex',
+    alignItems: 'center',
+    color: '#000000',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    letterSpacing: '0.4pt',
+    padding: '0 16px',
+    transition: 'transform .1s ease-in',
+    userSelect: 'none'
+  },
+
+  spanDark: {
+    color: '#ffffff'
+  },
+
+  pushTransformHover: {
+    transition: 'transform .1s ease-in'
+  },
+
+  pushTransformActive: {
+    transform: 'scale(0.97)',
+    transition: 'transform 0s ease-in'
+  }
+};
+},{}],85:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  navPane: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+    position: 'relative',
+    flex: '1'
+  },
+
+  navPaneItem: {
+    position: 'relative',
+    flexGrow: '1',
+    flexShrink: '0',
+    display: 'flex'
+  },
+
+  contentWrapper: {
+    display: 'flex',
+    flex: '1',
+    flexDirection: 'column'
+  },
+
+  content: {
+    display: 'flex',
+    flex: '1',
+    flexDirection: 'column'
+  },
+
+  title: {
+    position: 'relative',
+    color: '#000000',
+    height: '48px',
+    display: 'flex',
+    alignItems: 'center',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    textTransform: 'uppercase',
+    padding: '0 24px',
+    overflow: 'hidden',
+    cursor: 'default',
+    userSelect: 'none'
+  },
+
+  titleDark: {
+    color: '#ffffff'
+  }
+};
+},{}],86:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _radium = require('radium');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function generateUniqueId() {
+  return Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + +Math.floor(Math.random() * 10000 + 1) + '-' + Math.floor(Math.random() * 100000000000000);
+}
+
+function mapRules(selector, style) {
+  var styles = { 0: style };
+  if (style[':hover']) {
+    styles = _extends({}, styles, { ':hover': style[':hover'] });
+    delete styles[0][':hover'];
+  }
+
+  if (style[':active']) {
+    styles = _extends({}, styles, { ':active': style[':active'] });
+    delete styles[0][':active'];
+  }
+
+  if (style[':focus']) {
+    styles = _extends({}, styles, { ':focus': style[':focus'] });
+    delete styles[0][':focus'];
+  }
+
+  var rules = {};
+
+  for (var prop in styles) {
+    if (styles.hasOwnProperty(prop)) {
+      rules[selector + ' input' + (prop !== '0' ? prop : '') + '::-webkit-input-placeholder'] = styles[prop];
+      rules[selector + ' input' + (prop !== '0' ? prop : '') + '::-moz-placeholder'] = styles[prop];
+      rules[selector + ' input' + (prop !== '0' ? prop : '') + ':-ms-input-placeholder'] = styles[prop];
+      rules[selector + ' input' + (prop !== '0' ? prop : '') + ':placeholder'] = styles[prop];
+    }
+  }
+
+  return rules;
+}
+
+var _default = function (_Component) {
+  _inherits(_default, _Component);
+
+  function _default() {
+    _classCallCheck(this, _default);
+
+    var _this = _possibleConstructorReturn(this, (_default.__proto__ || Object.getPrototypeOf(_default)).call(this));
+
+    _this._id = generateUniqueId();
+    return _this;
+  }
+
+  _createClass(_default, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var placeholderStyle = _props.placeholderStyle;
+
+      var props = _objectWithoutProperties(_props, ['children', 'placeholderStyle']);
+
+      return _react2.default.createElement(
+        'div',
+        _extends({ 'data-reactdesktopid': this._id }, props),
+        children,
+        _react2.default.createElement(_radium.Style, { rules: mapRules('[data-reactdesktopid="' + this._id + '"]', placeholderStyle) })
+      );
+    }
+  }]);
+
+  return _default;
+}(_react.Component);
+
+exports.default = _default;
+},{"radium":14,"react":342}],87:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _hidden = require('../../style/hidden');
+
+var _windows = require('../../style/color/windows');
+
+var _progressCircleAnimation = require('./progressCircleAnimation');
+
+var _windows2 = require('./styles/windows10');
+
+var _windows3 = _interopRequireDefault(_windows2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ProgressCircle = (_dec = (0, _windows.ColorContext)(), _dec(_class = (_temp = _class2 = function (_Component) {
+  _inherits(ProgressCircle, _Component);
+
+  function ProgressCircle() {
+    _classCallCheck(this, ProgressCircle);
+
+    return _possibleConstructorReturn(this, (ProgressCircle.__proto__ || Object.getPrototypeOf(ProgressCircle)).apply(this, arguments));
+  }
+
+  _createClass(ProgressCircle, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.animation = (0, _progressCircleAnimation.startAnimation)(this.refs[0], this.refs[1], this.refs[2], this.refs[3], this.refs[4], this.refs[5]);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      (0, _progressCircleAnimation.stopAnimation)(this.animation);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var size = _props.size;
+      var style = _props.style;
+      var absolute = _props.absolute;
+      var hidden = _props.hidden;
+
+      var props = _objectWithoutProperties(_props, ['size', 'style', 'absolute', 'hidden']);
+
+      var containerStyle = _extends({}, _windows3.default.container);
+      var componentStyle = _extends({}, _windows3.default.progress, style, {
+        visibility: !hidden ? 'visible' : 'hidden',
+        display: !hidden ? 'block' : 'none'
+      });
+
+      if (absolute) {
+        componentStyle = _extends({}, componentStyle, _windows3.default.absolute);
+      }
+
+      var componentColor = this.context.color;
+      if (size) {
+        componentStyle = _extends({}, componentStyle, {
+          width: size + 'px',
+          height: size + 'px'
+        });
+        containerStyle = _extends({}, containerStyle, {
+          height: size + 'px'
+        });
+      }
+
+      var svg = _react2.default.createElement(
+        'svg',
+        _extends({
+          id: 'field',
+          ref: 'element',
+          x: '0px',
+          y: '0px',
+          viewBox: '0 0 150 150',
+          style: componentStyle
+        }, props),
+        _react2.default.createElement('circle', { ref: '0', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' }),
+        _react2.default.createElement('circle', { ref: '1', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' }),
+        _react2.default.createElement('circle', { ref: '2', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' }),
+        _react2.default.createElement('circle', { ref: '3', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' }),
+        _react2.default.createElement('circle', { ref: '4', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' }),
+        _react2.default.createElement('circle', { ref: '5', fill: componentColor, fillOpacity: '0', cx: '75', cy: '75', r: '7.3' })
+      );
+
+      var content = svg;
+      if (absolute) {
+        content = _react2.default.createElement(
+          'div',
+          { style: containerStyle },
+          svg
+        );
+      }
+
+      return content;
+    }
+  }]);
+
+  return ProgressCircle;
+}(_react.Component), _class2.propTypes = _extends({}, _hidden.hiddenPropTypes, _windows.colorPropTypes, {
+  absolute: _react.PropTypes.bool,
+  size: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+}), _class2.contextTypes = _extends({}, _windows.colorContextTypes), _temp)) || _class);
+exports.default = ProgressCircle;
+},{"../../style/color/windows":95,"../../style/hidden":97,"./progressCircleAnimation":88,"./styles/windows10":89,"react":342}],88:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startAnimation = startAnimation;
+exports.stopAnimation = stopAnimation;
+
+var _bezierEasing = require('../../animation/bezierEasing');
+
+var _bezierEasing2 = _interopRequireDefault(_bezierEasing);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var requestAnimationFrame = void 0;
+if (typeof window !== 'undefined') {
+  requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+}
+
+var totalIterations = 95;
+var circlesInterval = 14;
+var restartInterval = 250;
+var stopRotationAt = totalIterations * 2 / 1.02;
+var easing = (0, _bezierEasing2.default)(0, 0.47, 0.9, .25);
+var bounding = 68;
+
+var ids = [];
+var animations = {};
+
+function rotateCircle(circles) {
+  var lastFrame = false;
+  for (var i = 0, len = circles.length; i < len; ++i) {
+    if (this.iteration >= circlesInterval * i) {
+      var iteration = this.iteration - circlesInterval * i;
+      var revolution = Math.floor(iteration / totalIterations);
+      iteration = iteration - revolution * totalIterations;
+      if (iteration < 0) {
+        iteration = totalIterations - iteration;
+      } else if (iteration > totalIterations) {
+        iteration = iteration - totalIterations;
+      }
+      if (iteration + revolution * totalIterations > stopRotationAt) {
+        circles[i].setAttributeNS('', 'fill-opacity', '0');
+        if (i === circles.length - 1) {
+          lastFrame = true;
+        }
+      } else {
+        var value = easing.get(1 / totalIterations * iteration) * 2 * Math.PI * -1;
+        circles[i].setAttributeNS('', 'fill-opacity', '1');
+        circles[i].setAttributeNS('', 'cx', 75 + bounding * Math.sin(value) + '');
+        circles[i].setAttributeNS('', 'cy', 75 + bounding * Math.cos(value) + '');
+      }
+    }
+  }
+
+  this.iteration++;
+  if (!lastFrame) {
+    animations[this.id] = ['animationFrame', requestAnimationFrame(rotateCircle.bind(this, circles))];
+  } else {
+    animations[this.id] = ['timeout', window.setTimeout(startAnimation.bind.apply(startAnimation, [null].concat(_toConsumableArray(circles))), restartInterval)];
+  }
+}
+
+function startAnimation() {
+  var id = 0;
+  if (ids.length) id = ids[ids.length - 1] + 1;
+  ids.push(id);
+  if (requestAnimationFrame) {
+    for (var _len = arguments.length, elements = Array(_len), _key = 0; _key < _len; _key++) {
+      elements[_key] = arguments[_key];
+    }
+
+    rotateCircle.apply({ iteration: 0, currentIteration: 0, id: id }, [elements]);
+  }
+  return id;
+}
+
+function stopAnimation(animation) {
+  if (animations[animation][0] === 'timeout') {
+    window.clearTimeout(animations[animation][1]);
+  } else {
+    window.cancelAnimationFrame(animations[animation][1]);
+  }
+}
+},{"../../animation/bezierEasing":64}],89:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  progress: {
+    width: '20px',
+    height: '20px',
+    position: 'relative'
+  },
+
+  container: {
+    position: 'relative',
+    height: '20px'
+  },
+
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0
+  }
+};
+},{}],90:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _windows = require('./styles/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _text = require('../../text/windows/text');
+
+var _text2 = _interopRequireDefault(_text);
+
+var _windows3 = require('../../style/theme/windows');
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _windows4 = require('../../style/color/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Radio = (_dec = (0, _hidden2.default)(), _dec2 = (0, _windows4.ColorContext)(), _dec3 = (0, _windows3.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Radio, _Component);
+
+  function Radio(props) {
+    _classCallCheck(this, Radio);
+
+    var _this = _possibleConstructorReturn(this, (Radio.__proto__ || Object.getPrototypeOf(Radio)).call(this));
+
+    _this.onSiblingChange = function () {
+      if (_this.refs.element.checked !== _this.state.checked) {
+        _this.setState({ checked: _this.refs.element.checked });
+      }
+    };
+
+    _this.handleChange = function (event) {
+      _this.setState({ checked: event.target.checked });
+      if (_this.props.onChange) {
+        _this.props.onChange(event);
+      }
+    };
+
+    _this.state = {
+      checked: props.defaultChecked === true
+    };
+    return _this;
+  }
+
+  _createClass(Radio, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      document.addEventListener('change', this.onSiblingChange);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      document.removeEventListener('change', this.onSiblingChange);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var label = _props.label;
+      var color = _props.color;
+
+      var props = _objectWithoutProperties(_props, ['style', 'label', 'color']);
+
+      var componentStyle = _extends({}, _windows2.default.radio, this.context.theme === 'dark' ? _windows2.default['radioDark'] : {});
+      var labelStyle = _windows2.default.label;
+      var circleStyle = _extends({}, _windows2.default.circle, this.context.theme === 'dark' ? _windows2.default['circleDark'] : {});
+
+      if (this.state.checked) {
+        componentStyle = _extends({}, componentStyle, {
+          borderColor: color || this.context.color
+        });
+      }
+
+      if ((0, _radium.getState)(this.state, null, ':active')) {
+        if (this.state.checked) {
+          componentStyle = _extends({}, componentStyle, _windows2.default['radio:checked:active'], this.context.theme === 'dark' ? _windows2.default['radioDark:checked:active'] : {});
+          circleStyle = _extends({}, circleStyle, _windows2.default['circle:active'], this.context.theme === 'dark' ? _windows2.default['circleDark:active'] : {});
+        } else {
+          componentStyle = _extends({}, componentStyle, _windows2.default['radio:active'], this.context.theme === 'dark' ? _windows2.default['radioDark:active'] : {});
+        }
+      } else if ((0, _radium.getState)(this.state, null, ':hover')) {
+        if (this.state.checked) {
+          circleStyle = _extends({}, circleStyle, _windows2.default['circle:hover'], this.context.theme === 'dark' ? _windows2.default['circleDark:hover'] : {});
+        } else {
+          componentStyle = _extends({}, componentStyle, _windows2.default['radio:hover'], this.context.theme === 'dark' ? _windows2.default['radioDark:hover'] : {});
+        }
+      }
+
+      componentStyle = _extends({}, componentStyle, style);
+
+      return _react2.default.createElement(
+        'div',
+        { style: _windows2.default.container },
+        _react2.default.createElement(
+          'label',
+          { style: labelStyle },
+          _react2.default.createElement(
+            'div',
+            { style: _windows2.default.inputWrapper },
+            _react2.default.createElement('input', _extends({
+              ref: 'element',
+              type: 'radio'
+            }, props, {
+              style: componentStyle,
+              onChange: this.handleChange
+            })),
+            this.state.checked ? _react2.default.createElement('div', { style: circleStyle }) : null
+          ),
+          _react2.default.createElement(
+            _text2.default,
+            { style: _extends({}, _windows2.default.text, this.context.theme === 'dark' ? _windows2.default.textDark : {}) },
+            label
+          )
+        )
+      );
+    }
+  }]);
+
+  return Radio;
+}(_react.Component), _class2.propTypes = _extends({}, _hidden.hiddenPropTypes, _windows4.colorPropTypes, _windows3.themePropTypes, {
+  label: _react.PropTypes.string,
+  onChange: _react.PropTypes.func
+}), _class2.contextTypes = _extends({}, _windows3.themeContextTypes, _windows4.colorContextTypes), _temp)) || _class) || _class) || _class) || _class);
+exports.default = Radio;
+},{"../../style/color/windows":95,"../../style/hidden":97,"../../style/theme/windows":100,"../../text/windows/text":105,"./styles/windows":91,"radium":14,"react":342}],91:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  container: {
+    display: 'flex',
+    marginBottom: '21px'
+  },
+
+  label: {
+    display: 'flex',
+    position: 'relative',
+    ':hover': {},
+    ':active': {}
+  },
+
+  text: {
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    color: '#000000',
+    display: 'inline'
+  },
+
+  textDark: {
+    color: '#ffffff'
+  },
+
+  inputWrapper: {
+    position: 'relative',
+    marginRight: '7px',
+    paddingTop: '2px'
+  },
+
+  radio: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: '#333333',
+    borderRadius: '50%',
+    backgroundColor: 'transparent',
+    padding: '8px',
+    margin: '0px',
+
+    ':focus': {
+      outline: 'none'
+    }
+  },
+
+  'radio:hover': {
+    borderColor: '#000000'
+  },
+
+  'radio:active': {
+    borderColor: '#666666'
+  },
+
+  'radio:checked:active': {
+    borderColor: '#666666'
+  },
+
+  radioDark: {
+    borderColor: '#cccccc'
+  },
+
+  'radioDark:hover': {
+    borderColor: '#ffffff'
+  },
+
+  'radioDark:active': {
+    borderColor: '#999999'
+  },
+
+  'radioDark:checked:active': {
+    borderColor: '#999999'
+  },
+
+  circle: {
+    position: 'absolute',
+    top: '7px',
+    left: '5px',
+    width: '10px',
+    height: '10px',
+    borderRadius: '50%',
+    background: '#333333'
+  },
+
+  'circle:hover': {
+    background: '#000000'
+  },
+
+  'circle:active': {
+    background: '#666666'
+  },
+
+  circleDark: {
+    background: '#cccccc'
+  },
+
+  'circleDark:hover': {
+    background: '#ffffff'
+  },
+
+  'circleDark:active': {
+    background: '#999999'
+  }
+};
+},{}],92:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.parseDimension = parseDimension;
+exports.applyDefaultProps = applyDefaultProps;
+exports.hasProps = hasProps;
+exports.extractProps = extractProps;
+exports.mapStyle = mapStyle;
+exports.default = styleHelper;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function parseDimension(value) {
+  if (typeof value === 'number') {
+    return value + 'px';
+  } else if (value.match(/^[0-9]+$/)) {
+    return value + 'px';
+  }
+  return value;
+}
+
+function applyDefaultProps(props, context, defaultProps) {
+  var finalProps = _extends({}, props);
+
+  for (var prop in defaultProps) {
+    if (defaultProps.hasOwnProperty(prop)) {
+      if (!props[prop]) {
+        if (context[prop]) {
+          finalProps[prop] = context[prop];
+        } else {
+          finalProps[prop] = defaultProps[prop];
+        }
+      } else if (props[prop] && typeof props[prop] === 'boolean' && typeof defaultProps[prop] !== 'boolean') {
+        if (context.color) {
+          finalProps[prop] = context[prop];
+        } else {
+          finalProps[prop] = defaultProps[prop];
+        }
+      }
+    }
+  }
+
+  return finalProps;
+}
+
+function hasProps(props, proptypes) {
+  if (!proptypes) return false;
+
+  for (var prop in props) {
+    if (props.hasOwnProperty(prop)) {
+      if (proptypes[prop] !== undefined) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function extractProps(props, proptypes) {
+  if (!proptypes) return [{}, {}];
+
+  var finalProps = {};
+  var extractedProps = {};
+  for (var prop in props) {
+    if (props.hasOwnProperty(prop)) {
+      if (proptypes[prop] !== undefined) {
+        extractedProps[prop] = props[prop];
+      } else {
+        finalProps[prop] = props[prop];
+      }
+    }
+  }
+  return [finalProps, extractedProps];
+}
+
+function mapStyle(prevStyles, nextStyles, defaultStyles, styleCallback, stylesCallback, props) {
+  var finalStyles = _extends({}, prevStyles);
+  if (defaultStyles) {
+    for (var key in defaultStyles) {
+      if (defaultStyles.hasOwnProperty(key)) {
+        finalStyles[key] = defaultStyles[key];
+      }
+    }
+  }
+
+  for (var _key in nextStyles) {
+    if (nextStyles.hasOwnProperty(_key)) {
+      if (styleCallback) {
+        var result = styleCallback(_key, nextStyles[_key], props);
+        if (result) {
+          finalStyles[result[0]] = result[1];
+        }
+      } else finalStyles[_key] = nextStyles[_key];
+    }
+  }
+
+  if (typeof stylesCallback === 'function') return stylesCallback(finalStyles, props);
+  return finalStyles;
+}
+
+function styleHelper(options, propTypes, mapStyleCallback, mapStylesCallback, mapProps) {
+  if (!mapProps || typeof mapProps !== 'function') {
+    mapProps = function mapProps(props) {
+      return props;
+    };
+  }
+
+  function doStyleHelper(WrappedComponent) {
+    var _options = _slicedToArray(options, 3);
+
+    var element = _options[0];
+    var elementProps = _options[1];
+    var defaultStyles = _options[2];
+
+    if ((0, _react.isValidElement)(element)) {
+      if (hasProps(elementProps, propTypes) || hasProps(defaultStyles, propTypes)) {
+        var styles = extractProps(elementProps, propTypes)[1];
+        var props = element.props ? _extends({}, element.props) : {};
+        props.style = mapStyle(props.style, styles, defaultStyles, mapStyleCallback, mapStylesCallback, elementProps);
+        return (0, _react.cloneElement)(element, mapProps(props, element.props, true));
+      }
+      return (0, _react.cloneElement)(element, mapProps(element.props, element.props, false));
+    } else {
+      var _ret = function () {
+        var defaultStyles = void 0;
+        if (options && Object.prototype.toString.call(options) === '[object Array]') {
+          defaultStyles = options[0];
+        }
+        return {
+          v: function (_Component) {
+            _inherits(v, _Component);
+
+            function v() {
+              _classCallCheck(this, v);
+
+              return _possibleConstructorReturn(this, (v.__proto__ || Object.getPrototypeOf(v)).apply(this, arguments));
+            }
+
+            _createClass(v, [{
+              key: 'render',
+              value: function render() {
+                if (hasProps(this.props, propTypes) || hasProps(defaultStyles, propTypes)) {
+                  var _extractProps = extractProps(this.props, propTypes);
+
+                  var _extractProps2 = _slicedToArray(_extractProps, 2);
+
+                  var _props = _extractProps2[0];
+                  var _styles = _extractProps2[1];
+
+                  if (!_props) _props = {};
+                  _props.style = mapStyle(_props.style, _styles, defaultStyles, mapStyleCallback, mapStylesCallback, this.props);
+                  return _react2.default.createElement(WrappedComponent, mapProps(_props, this.props, true));
+                }
+                return _react2.default.createElement(WrappedComponent, mapProps(this.props, this.props, false));
+              }
+            }]);
+
+            return v;
+          }(_react.Component)
+        };
+      }();
+
+      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+    }
+  }
+
+  if (options[0] && (0, _react.isValidElement)(options[0])) {
+    return doStyleHelper();
+  }
+
+  return doStyleHelper;
+}
+},{"react":342}],93:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.alignmentPropTypes = undefined;
+exports.removeAlignmentProps = removeAlignmentProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, alignmentPropTypes, mapAlignmentStyle);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var allowedValues = ['left', 'right', 'center'];
+
+var alignmentPropTypes = exports.alignmentPropTypes = {
+  horizontalAlignment: _react.PropTypes.string,
+  verticalAlignment: _react.PropTypes.string
+};
+
+function removeAlignmentProps(props) {
+  return (0, _styleHelper.extractProps)(props, alignmentPropTypes)[0];
+}
+
+function mapAlignmentStyle(key, value, props) {
+  var finalKey = void 0,
+      finalValue = void 0;
+  if (allowedValues.indexOf(value) === -1) {
+    console.error('Unknown value for ' + key + ': ' + value);
+  } else {
+    var layout = 'horizontal';
+    if (props !== undefined && typeof props.layout !== 'undefined') {
+      layout = props.layout;
+    }
+    if (key === 'horizontalAlignment' && layout === 'horizontal' || key === 'verticalAlignment' && layout === 'vertical') {
+      finalKey = 'justifyContent';
+      switch (value) {
+        case 'center':
+          finalValue = 'center';
+          break;
+        case 'left':
+          finalValue = 'flex-start';
+          break;
+        case 'right':
+          finalValue = 'flex-end';
+          break;
+      }
+    } else if (key === 'verticalAlignment' && layout === 'horizontal' || key === 'horizontalAlignment' && layout === 'vertical') {
+      finalKey = 'alignItems';
+      switch (value) {
+        case 'center':
+          finalValue = 'center';
+          break;
+        case 'left':
+          finalValue = 'flex-start';
+          break;
+        case 'right':
+          finalValue = 'flex-end';
+          break;
+      }
+    }
+  }
+  return [finalKey, finalValue];
+}
+},{"../styleHelper":92,"react":342}],94:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.backgroundContextTypes = exports.backgroundPropTypes = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.removeBackgroundProps = removeBackgroundProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  if (options[0] && (0, _react.isValidElement)(options[0])) {
+    var _dec, _class, _class2, _temp;
+
+    var BackgroundElement = (_dec = (0, _windows.ColorContext)(true), _dec(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+      _inherits(BackgroundElement, _Component);
+
+      function BackgroundElement() {
+        _classCallCheck(this, BackgroundElement);
+
+        return _possibleConstructorReturn(this, (BackgroundElement.__proto__ || Object.getPrototypeOf(BackgroundElement)).apply(this, arguments));
+      }
+
+      _createClass(BackgroundElement, [{
+        key: 'render',
+        value: function render() {
+          var props = _extends({}, options[1]);
+          if (typeof props.background === 'boolean') {
+            if (!props.background) delete props.background;else if (this.context.color) props.background = this.context.color;else delete props.background;
+          }
+
+          options[1] = _extends({}, props);
+          return (0, _styleHelper2.default)(options, backgroundPropTypes);
+        }
+      }]);
+
+      return BackgroundElement;
+    }(_react.Component), _class2.contextTypes = _extends({}, _windows.colorContextTypes), _temp)) || _class) || _class);
+
+    return _react2.default.createElement(BackgroundElement, null);
+  }
+
+  return function (WrappedComponent) {
+    var _dec2, _class3, _class4, _temp2;
+
+    var ComposedComponent = (0, _styleHelper2.default)(options, backgroundPropTypes, null, null, options[0])(WrappedComponent);
+    var BackgroundComponent = (_dec2 = (0, _windows.ColorContext)(true), _dec2(_class3 = (_temp2 = _class4 = function (_Component2) {
+      _inherits(BackgroundComponent, _Component2);
+
+      function BackgroundComponent() {
+        _classCallCheck(this, BackgroundComponent);
+
+        return _possibleConstructorReturn(this, (BackgroundComponent.__proto__ || Object.getPrototypeOf(BackgroundComponent)).apply(this, arguments));
+      }
+
+      _createClass(BackgroundComponent, [{
+        key: 'render',
+        value: function render() {
+          var props = _extends({}, this.props);
+          if (typeof props.background === 'boolean') {
+            if (!props.background) delete props.background;else {
+              props.background = this.context.color;
+            }
+          }
+          return _react2.default.createElement(ComposedComponent, props);
+        }
+      }]);
+
+      return BackgroundComponent;
+    }(_react.Component), _class4.contextTypes = _extends({}, _windows.colorContextTypes), _temp2)) || _class3);
+
+    return BackgroundComponent;
+  };
+};
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleHelper = require('../../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+var _windows = require('../../style/color/windows');
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var backgroundPropTypes = exports.backgroundPropTypes = {
+  background: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+};
+
+var backgroundContextTypes = exports.backgroundContextTypes = {
+  background: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+};
+
+function removeBackgroundProps(props) {
+  return (0, _styleHelper.extractProps)(props, backgroundPropTypes)[0];
+}
+},{"../../style/color/windows":95,"../../styleHelper":92,"radium":14,"react":342}],95:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.colorContextTypes = exports.colorPropTypes = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.ColorContext = ColorContext;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleHelper = require('../../styleHelper');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var colorPropTypes = exports.colorPropTypes = {
+  color: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+};
+
+var colorContextTypes = exports.colorContextTypes = {
+  color: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+};
+
+var applyColorProps = function applyColorProps(props, context) {
+  return (0, _styleHelper.applyDefaultProps)(props, context, { color: '#0063ae' });
+};
+
+function ColorContext() {
+  var preserveProperty = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+  return function (ComposedComponent) {
+    var _class, _temp;
+
+    return _temp = _class = function (_Component) {
+      _inherits(_class, _Component);
+
+      function _class() {
+        _classCallCheck(this, _class);
+
+        return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+      }
+
+      _createClass(_class, [{
+        key: 'getChildContext',
+        value: function getChildContext() {
+          return {
+            color: applyColorProps(this.props, this.context).color
+          };
+        }
+      }, {
+        key: 'render',
+        value: function render() {
+          var props = _objectWithoutProperties(this.props, []);
+
+          if (!preserveProperty) delete props.color;
+          return _react2.default.createElement(ComposedComponent, props);
+        }
+      }]);
+
+      return _class;
+    }(_react.Component), _class.propTypes = _extends({}, colorPropTypes), _class.contextTypes = _extends({}, colorContextTypes), _class.childContextTypes = _extends({}, colorContextTypes), _temp;
+  };
+}
+},{"../../styleHelper":92,"react":342}],96:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.dimensionPropTypes = undefined;
+exports.removeDimensionProps = removeDimensionProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, dimensionPropTypes, mapDimensionStyle);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var dimensionPropTypes = exports.dimensionPropTypes = {
+  width: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  height: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+};
+
+function removeDimensionProps(props) {
+  return (0, _styleHelper.extractProps)(props, dimensionPropTypes)[0];
+}
+
+function mapDimensionStyle(key, value) {
+  return [key, (0, _styleHelper.parseDimension)(value)];
+}
+},{"../styleHelper":92,"react":342}],97:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.hiddenPropTypes = undefined;
+exports.removeHiddenProps = removeHiddenProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, hiddenPropTypes, mapHiddenStyle);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var hiddenPropTypes = exports.hiddenPropTypes = {
+  hidden: _react.PropTypes.bool
+};
+
+function removeHiddenProps(props) {
+  return (0, _styleHelper.extractProps)(props, hiddenPropTypes)[0];
+}
+
+function mapHiddenStyle(key, value) {
+  return value ? ['display', 'none'] : null;
+}
+},{"../styleHelper":92,"react":342}],98:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.marginPropTypes = undefined;
+exports.removeMarginProps = removeMarginProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, marginPropTypes, mapMarginStyle);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var marginPropTypes = exports.marginPropTypes = {
+  margin: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  marginTop: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  marginLeft: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  marginRight: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  marginBottom: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+};
+
+function removeMarginProps(props) {
+  return (0, _styleHelper.extractProps)(props, marginPropTypes)[0];
+}
+
+function mapMarginStyle(key, value) {
+  return [key, (0, _styleHelper.parseDimension)(value)];
+}
+},{"../styleHelper":92,"react":342}],99:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.paddingPropTypes = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.removePaddingProps = removePaddingProps;
+exports.removeDuplicatePaddingProps = removeDuplicatePaddingProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, paddingPropTypes, mapPaddingStyle);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var paddingPropTypes = exports.paddingPropTypes = {
+  padding: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paddingTop: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paddingLeft: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paddingRight: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]),
+  paddingBottom: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+};
+
+function removePaddingProps(props) {
+  return (0, _styleHelper.extractProps)(props, paddingPropTypes)[0];
+}
+
+function removeDuplicatePaddingProps(styles, props) {
+  if (props !== undefined && typeof props.style !== 'undefined') {
+    styles = _extends({}, styles);
+    if (props.style.padding) {
+      delete styles.paddingBottom;
+      delete styles.paddingLeft;
+      delete styles.paddingRight;
+      delete styles.paddingTop;
+      return styles;
+    } else if (props.style.paddingBottom || props.style.paddingLeft || props.style.paddingRight || props.style.paddingTop) {
+      delete styles.padding;
+      return styles;
+    }
+  }
+  return styles;
+}
+
+function mapPaddingStyle(key, value) {
+  return [key, (0, _styleHelper.parseDimension)(value)];
+}
+},{"../styleHelper":92,"react":342}],100:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.themeContextTypes = exports.themePropTypes = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.ThemeContext = ThemeContext;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _styleHelper = require('../../styleHelper');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var themePropTypes = exports.themePropTypes = {
+  theme: _react.PropTypes.string
+};
+
+var themeContextTypes = exports.themeContextTypes = {
+  theme: _react.PropTypes.string
+};
+
+var applyThemeProps = function applyThemeProps(props, context) {
+  return (0, _styleHelper.applyDefaultProps)(props, context, { theme: 'light' });
+};
+
+function ThemeContext() {
+  return function (ComposedComponent) {
+    var _class, _temp;
+
+    return _temp = _class = function (_Component) {
+      _inherits(_class, _Component);
+
+      function _class() {
+        _classCallCheck(this, _class);
+
+        return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+      }
+
+      _createClass(_class, [{
+        key: 'getChildContext',
+        value: function getChildContext() {
+          return {
+            theme: applyThemeProps(this.props, this.context).theme
+          };
+        }
+      }, {
+        key: 'render',
+        value: function render() {
+          var props = _objectWithoutProperties(this.props, []);
+
+          delete props.theme;
+          return _react2.default.createElement(ComposedComponent, props);
+        }
+      }]);
+
+      return _class;
+    }(_react.Component), _class.propTypes = _extends({}, themePropTypes), _class.contextTypes = _extends({}, themeContextTypes), _class.childContextTypes = _extends({}, themeContextTypes), _temp;
+  };
+}
+},{"../../styleHelper":92,"react":342}],101:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.widthPropTypes = undefined;
+exports.removeWidthProps = removeWidthProps;
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  return (0, _styleHelper2.default)(options, widthPropTypes, mapWidthStyle, mapWidthStyles);
+};
+
+var _react = require('react');
+
+var _styleHelper = require('../styleHelper');
+
+var _styleHelper2 = _interopRequireDefault(_styleHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var widthPropTypes = exports.widthPropTypes = {
+  width: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number])
+};
+
+function removeWidthProps(props) {
+  return (0, _styleHelper.extractProps)(props, widthPropTypes)[0];
+}
+
+function mapWidthStyle(key, value) {
+  return [key, (0, _styleHelper.parseDimension)(value)];
+}
+
+function mapWidthStyles(styles) {
+  if (styles.width) {
+    if (styles.flex) {
+      delete styles.flex;
+    } else if (styles.flexGrow) {
+      delete styles.flexGrow;
+    }
+  }
+  return styles;
+}
+},{"../styleHelper":92,"react":342}],102:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  textBox: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: 'rgba(148, 148, 148, 1)',
+    padding: '2px 10px 3px 10px',
+    lineHeight: '23px',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '15px',
+    fontWeight: '100',
+    color: '#000000',
+    marginBottom: '18px',
+    background: 'rgba(255, 255, 255, .35)',
+
+    ':hover': {
+      borderColor: 'rgba(100, 100, 100, 1)',
+      background: 'rgba(255, 255, 255, .5)'
+    },
+
+    ':focus': {
+      outline: 'none',
+      borderColor: 'rgba(0, 120, 215, 1)',
+      background: 'rgba(255, 255, 255, 1)'
+    }
+  },
+
+  textBoxDarkTheme: {
+    borderColor: 'rgba(255, 255, 255, .41)',
+    background: 'rgba(0, 0, 0, .4)',
+    color: '#ffffff',
+
+    ':hover': {
+      borderColor: 'rgba(255, 255, 255, .94)',
+      background: 'rgba(0, 0, 0, .6)'
+    },
+
+    ':focus': {
+      outline: 'none',
+      borderColor: 'rgba(0, 120, 215, 1)',
+      background: 'rgba(255, 255, 255, 1)',
+      color: '#000000'
+    }
+  },
+
+  ':placeholder': {
+    color: '#636363'
+  },
+
+  ':placeholderDarkTheme': {
+    color: 'rgba(255, 255, 255, .64)',
+
+    ':focus': {
+      color: 'rgba(0, 0, 0, .41)'
+    }
+  }
+};
+},{}],103:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _text = require('../../text/windows/text');
+
+var _text2 = _interopRequireDefault(_text);
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _dimension = require('../../style/dimension');
+
+var _dimension2 = _interopRequireDefault(_dimension);
+
+var _margin = require('../../style/margin');
+
+var _margin2 = _interopRequireDefault(_margin);
+
+var _windows = require('../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _windows3 = require('../../style/theme/windows');
+
+var _windows4 = require('../../style/color/windows');
+
+var _windows5 = require('./styles/windows10');
+
+var _windows6 = _interopRequireDefault(_windows5);
+
+var _placeholderStyle = require('../../placeholderStyle');
+
+var _placeholderStyle2 = _interopRequireDefault(_placeholderStyle);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TextInput = (_dec = (0, _hidden2.default)(), _dec2 = (0, _dimension2.default)(), _dec3 = (0, _margin2.default)(), _dec4 = (0, _windows4.ColorContext)(), _dec5 = (0, _windows3.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(TextInput, _Component);
+
+  function TextInput() {
+    _classCallCheck(this, TextInput);
+
+    return _possibleConstructorReturn(this, (TextInput.__proto__ || Object.getPrototypeOf(TextInput)).apply(this, arguments));
+  }
+
+  _createClass(TextInput, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var label = _props.label;
+      var style = _props.style;
+
+      var props = _objectWithoutProperties(_props, ['label', 'style']);
+
+      var componentStyle = _extends({}, _windows6.default.textBox, style);
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows6.default.textBoxDarkTheme);
+      }
+
+      componentStyle[':focus'] = _extends({}, componentStyle[':focus'], { borderColor: this.context.color });
+
+      props = (0, _windows.removeBackgroundProps)(props);
+
+      var input = _react2.default.createElement(
+        _placeholderStyle2.default,
+        { placeholderStyle: this.placeholderStyle },
+        (0, _windows2.default)(_react2.default.createElement('input', _extends({
+          ref: 'element',
+          type: 'text',
+          style: componentStyle
+        }, props)), this.props)
+      );
+
+      if (label) {
+        return _react2.default.createElement(
+          'div',
+          null,
+          _react2.default.createElement(
+            _text2.default,
+            { style: { marginBottom: '5px' } },
+            label
+          ),
+          input
+        );
+      }
+      return input;
+    }
+  }, {
+    key: 'placeholderStyle',
+    get: function get() {
+      return this.context.theme === 'dark' ? _windows6.default[':placeholderDarkTheme'] : _windows6.default[':placeholder'];
+    }
+  }, {
+    key: 'value',
+    get: function get() {
+      return this.refs.element.value;
+    },
+    set: function set(value) {
+      this.refs.element.value = value;
+    }
+  }]);
+
+  return TextInput;
+}(_react.Component), _class2.propTypes = _extends({}, _windows3.themePropTypes, _hidden.hiddenPropTypes, _dimension.dimensionPropTypes, _margin.marginPropTypes, _windows.backgroundPropTypes, {
+  label: _react.PropTypes.string
+}), _class2.contextTypes = _extends({}, _windows3.themeContextTypes, _windows4.colorContextTypes), _temp)) || _class) || _class) || _class) || _class) || _class) || _class);
+exports.default = TextInput;
+},{"../../placeholderStyle":86,"../../style/background/windows":94,"../../style/color/windows":95,"../../style/dimension":96,"../../style/hidden":97,"../../style/margin":98,"../../style/theme/windows":100,"../../text/windows/text":105,"./styles/windows10":102,"radium":14,"react":342}],104:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  text: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default',
+    lineHeight: '25.96px',
+    fontFamily: '"Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif',
+    fontSize: '14px',
+    display: 'flex'
+  }
+};
+},{}],105:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _margin = require('../../style/margin');
+
+var _margin2 = _interopRequireDefault(_margin);
+
+var _padding = require('../../style/padding');
+
+var _padding2 = _interopRequireDefault(_padding);
+
+var _alignment = require('../../style/alignment');
+
+var _alignment2 = _interopRequireDefault(_alignment);
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _windows = require('../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _dimension = require('../../style/dimension');
+
+var _dimension2 = _interopRequireDefault(_dimension);
+
+var _windows3 = require('../../style/color/windows');
+
+var _windows4 = require('../../style/theme/windows');
+
+var _windows5 = require('./styles/windows10');
+
+var _windows6 = _interopRequireDefault(_windows5);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Text = (_dec = (0, _margin2.default)(), _dec2 = (0, _padding2.default)(), _dec3 = (0, _alignment2.default)(), _dec4 = (0, _hidden2.default)(), _dec5 = (0, _windows2.default)(), _dec6 = (0, _dimension2.default)(), _dec7 = (0, _windows4.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Text, _Component);
+
+  function Text() {
+    _classCallCheck(this, Text);
+
+    return _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).apply(this, arguments));
+  }
+
+  _createClass(Text, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+      var color = _props.color;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style', 'color']);
+
+      var componentStyle = _extends({}, _windows6.default.text);
+
+      color = color === true ? this.context.color : color ? color : '#000000';
+      if (color) componentStyle = _extends({}, componentStyle, { color: color });else if (this.context.theme === 'dark') componentStyle = _extends({}, componentStyle, { color: '#ffffff' });
+
+      if (props.horizontalAlignment) {
+        componentStyle.textAlign = props.horizontalAlignment;
+      }
+
+      componentStyle = _extends({}, componentStyle, style);
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return Text;
+}(_react.Component), _class2.propTypes = _extends({}, _windows4.themePropTypes, _margin.marginPropTypes, _padding.paddingPropTypes, _alignment.alignmentPropTypes, _hidden.hiddenPropTypes, _windows.backgroundPropTypes, _dimension.dimensionPropTypes, {
+  color: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.bool])
+}), _class2.contextTypes = _extends({}, _windows3.colorContextTypes, _windows4.themeContextTypes), _temp)) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+exports.default = Text;
+},{"../../style/alignment":93,"../../style/background/windows":94,"../../style/color/windows":95,"../../style/dimension":96,"../../style/hidden":97,"../../style/margin":98,"../../style/padding":99,"../../style/theme/windows":100,"./styles/windows10":104,"react":342}],106:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+var _windowFocus = require('../../../windowFocus');
+
+var _windowFocus2 = _interopRequireDefault(_windowFocus);
+
+var _windows = require('../../../style/theme/windows');
+
+var _windows2 = require('../../../style/background/windows');
+
+var _color = require('../../../color');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  button: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppRegion: 'no-drag',
+    cursor: 'default',
+    width: '46px',
+    height: '100%',
+    lineHeight: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    ':hover': {
+      transition: 'background-color 0.1s',
+      backgroundColor: '#e81123'
+    },
+
+    ':active': {
+      backgroundColor: '#f1707a'
+    }
+  },
+
+  icon: {
+    width: '10px',
+    height: '10px'
+  }
+};
+
+var Close = (_dec = (0, _windowFocus2.default)(), _dec(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Close, _Component);
+
+  function Close() {
+    _classCallCheck(this, Close);
+
+    return _possibleConstructorReturn(this, (Close.__proto__ || Object.getPrototypeOf(Close)).apply(this, arguments));
+  }
+
+  _createClass(Close, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var isWindowFocused = _props.isWindowFocused;
+
+      var props = _objectWithoutProperties(_props, ['style', 'isWindowFocused']);
+
+      var svgFill = '#000000';
+      if (!isWindowFocused && this.context.theme !== 'dark') {
+        svgFill = 'rgba(0, 0, 0, .4)';
+      }
+
+      var componentStyle = _extends({}, styles.button, style);
+      if (this.context.theme === 'dark' || this.context.background && (0, _color.isDarkColor)(this.context.background)) {
+        svgFill = '#ffffff';
+        componentStyle = _extends({}, componentStyle, styles.buttonColorBackground);
+      }
+
+      if ((0, _radium.getState)(this.state, null, ':active')) {
+        svgFill = '#000000';
+      } else if ((0, _radium.getState)(this.state, null, ':hover')) {
+        svgFill = '#ffffff';
+      }
+
+      return _react2.default.createElement(
+        'a',
+        _extends({
+          title: 'Close',
+          style: componentStyle
+        }, props),
+        _react2.default.createElement(
+          'svg',
+          { x: '0px', y: '0px', viewBox: '0 0 10.2 10.2', style: styles.icon },
+          _react2.default.createElement('polygon', {
+            fill: svgFill,
+            points: '10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1 '
+          })
+        )
+      );
+    }
+  }]);
+
+  return Close;
+}(_react.Component), _class2.contextTypes = _extends({}, _windows.themeContextTypes, _windows2.backgroundContextTypes), _temp)) || _class) || _class);
+exports.default = Close;
+},{"../../../color":69,"../../../style/background/windows":94,"../../../style/theme/windows":100,"../../../windowFocus":113,"radium":14,"react":342}],107:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _close = require('./close');
+
+var _close2 = _interopRequireDefault(_close);
+
+var _minimize = require('./minimize');
+
+var _minimize2 = _interopRequireDefault(_minimize);
+
+var _maximize = require('./maximize');
+
+var _maximize2 = _interopRequireDefault(_maximize);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  controls: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default',
+    display: 'flex',
+    height: '32px'
+  }
+};
+
+var Controls = (_temp = _class = function (_Component) {
+  _inherits(Controls, _Component);
+
+  function Controls() {
+    _classCallCheck(this, Controls);
+
+    return _possibleConstructorReturn(this, (Controls.__proto__ || Object.getPrototypeOf(Controls)).apply(this, arguments));
+  }
+
+  _createClass(Controls, [{
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        { style: styles.controls },
+        _react2.default.createElement(_minimize2.default, { onClick: this.props.onMinimizeClick, ref: 'minimize' }),
+        _react2.default.createElement(_maximize2.default, { onMaximizeClick: this.props.onMaximizeClick, onRestoreDownClick: this.props.onRestoreDownClick, ref: 'maximize' }),
+        _react2.default.createElement(_close2.default, { onClick: this.props.onCloseClick, ref: 'close' })
+      );
+    }
+  }]);
+
+  return Controls;
+}(_react.Component), _class.propTypes = {
+  onCloseClick: _react.PropTypes.func,
+  onMinimizeClick: _react.PropTypes.func,
+  onRestoreDownClick: _react.PropTypes.func,
+  onMaximizeClick: _react.PropTypes.func
+}, _temp);
+exports.default = Controls;
+},{"./close":106,"./maximize":108,"./minimize":109,"react":342}],108:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windowFocus = require('../../../windowFocus');
+
+var _windowFocus2 = _interopRequireDefault(_windowFocus);
+
+var _windows = require('../../../style/theme/windows');
+
+var _windows2 = require('../../../style/background/windows');
+
+var _color = require('../../../color');
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  button: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppRegion: 'no-drag',
+    cursor: 'default',
+    width: '46px',
+    height: '100%',
+    lineHeight: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    ':hover': {
+      transition: 'background-color 0.1s',
+      backgroundColor: '#e5e5e5'
+    },
+
+    ':active': {
+      backgroundColor: '#cccccc'
+    }
+  },
+
+  buttonColorBackground: {
+    ':hover': {
+      transition: 'background-color 0.1s',
+      backgroundColor: 'rgba(255, 255, 255, .13)'
+    },
+
+    ':active': {
+      backgroundColor: 'rgba(255, 255, 255, .23)'
+    }
+  },
+
+  icon: {
+    width: '10px',
+    height: '10px'
+  }
+};
+
+var Maximize = (_dec = (0, _windowFocus2.default)(), _dec(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Maximize, _Component);
+
+  function Maximize() {
+    _classCallCheck(this, Maximize);
+
+    return _possibleConstructorReturn(this, (Maximize.__proto__ || Object.getPrototypeOf(Maximize)).apply(this, arguments));
+  }
+
+  _createClass(Maximize, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var isWindowFocused = _props.isWindowFocused;
+
+      var props = _objectWithoutProperties(_props, ['style', 'isWindowFocused']);
+
+      delete props.onMaximizeClick;
+      delete props.onRestoreDownClick;
+
+      var svgFill = '#000000';
+      if (!isWindowFocused && this.context.theme !== 'dark') {
+        svgFill = 'rgba(0, 0, 0, .4)';
+      }
+
+      var componentStyle = _extends({}, styles.button, style);
+      if (this.context.theme === 'dark' || this.context.background && (0, _color.isDarkColor)(this.context.background)) {
+        svgFill = '#ffffff';
+        componentStyle = _extends({}, componentStyle, styles.buttonColorBackground);
+      }
+
+      var title = 'Maximize';
+      var icon = _react2.default.createElement(
+        'svg',
+        { x: '0px', y: '0px', viewBox: '0 0 10.2 10.1', style: styles.icon },
+        _react2.default.createElement('path', {
+          fill: svgFill,
+          d: 'M0,0v10.1h10.2V0H0z M9.2,9.2H1.1V1h8.1V9.2z'
+        })
+      );
+      var onClick = this.props.onMaximizeClick;
+      if (this.context.isMaximized) {
+        title = 'Restore Down';
+        icon = _react2.default.createElement(
+          'svg',
+          { x: '0px', y: '0px', viewBox: '0 0 10.2 10.2', style: styles.icon },
+          _react2.default.createElement('path', {
+            fill: svgFill,
+            d: 'M2.1,0v2H0v8.1h8.2v-2h2V0H2.1z M7.2,9.2H1.1V3h6.1V9.2z M9.2,7.1h-1V2H3.1V1h6.1V7.1z'
+          })
+        );
+        onClick = this.props.onRestoreDownClick;
+      }
+
+      return _react2.default.createElement(
+        'a',
+        _extends({
+          title: title,
+          style: componentStyle,
+          onClick: onClick
+        }, props),
+        icon
+      );
+    }
+  }]);
+
+  return Maximize;
+}(_react.Component), _class2.contextTypes = _extends({}, _windows.themeContextTypes, _windows2.backgroundContextTypes, {
+  isMaximized: _react.PropTypes.bool
+}), _temp)) || _class) || _class);
+exports.default = Maximize;
+},{"../../../color":69,"../../../style/background/windows":94,"../../../style/theme/windows":100,"../../../windowFocus":113,"radium":14,"react":342}],109:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windowFocus = require('../../../windowFocus');
+
+var _windowFocus2 = _interopRequireDefault(_windowFocus);
+
+var _windows = require('../../../style/theme/windows');
+
+var _windows2 = require('../../../style/background/windows');
+
+var _color = require('../../../color');
+
+var _radium = require('radium');
+
+var _radium2 = _interopRequireDefault(_radium);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  button: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppRegion: 'no-drag',
+    appRegion: 'no-drag',
+    cursor: 'default',
+    width: '46px',
+    height: '100%',
+    lineHeight: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    ':hover': {
+      transition: 'background-color 0.1s',
+      backgroundColor: '#e5e5e5'
+    },
+
+    ':active': {
+      backgroundColor: '#cccccc'
+    }
+  },
+
+  buttonColorBackground: {
+    ':hover': {
+      transition: 'background-color 0.1s',
+      backgroundColor: 'rgba(255, 255, 255, .13)'
+    },
+
+    ':active': {
+      backgroundColor: 'rgba(255, 255, 255, .23)'
+    }
+  },
+
+  icon: {
+    width: '10px',
+    height: '10px'
+  }
+};
+
+var Minimize = (_dec = (0, _windowFocus2.default)(), _dec(_class = (0, _radium2.default)(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Minimize, _Component);
+
+  function Minimize() {
+    _classCallCheck(this, Minimize);
+
+    return _possibleConstructorReturn(this, (Minimize.__proto__ || Object.getPrototypeOf(Minimize)).apply(this, arguments));
+  }
+
+  _createClass(Minimize, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var isWindowFocused = _props.isWindowFocused;
+
+      var props = _objectWithoutProperties(_props, ['style', 'isWindowFocused']);
+
+      var svgFill = '#000000';
+      if (!isWindowFocused && this.context.theme !== 'dark') {
+        svgFill = 'rgba(0, 0, 0, .4)';
+      }
+
+      var componentStyle = _extends({}, styles.button, style);
+      if (this.context.theme === 'dark' || this.context.background && (0, _color.isDarkColor)(this.context.background)) {
+        svgFill = '#ffffff';
+        componentStyle = _extends({}, componentStyle, styles.buttonColorBackground);
+      }
+
+      return _react2.default.createElement(
+        'a',
+        _extends({
+          title: 'Minimize',
+          style: componentStyle
+        }, props),
+        _react2.default.createElement(
+          'svg',
+          { x: '0px', y: '0px', viewBox: '0 0 10.2 1', style: styles.icon },
+          _react2.default.createElement('rect', { fill: svgFill, width: '10.2', height: '1' })
+        )
+      );
+    }
+  }]);
+
+  return Minimize;
+}(_react.Component), _class2.contextTypes = _extends({}, _windows.themeContextTypes, _windows2.backgroundContextTypes), _temp)) || _class) || _class);
+exports.default = Minimize;
+},{"../../../color":69,"../../../style/background/windows":94,"../../../style/theme/windows":100,"../../../windowFocus":113,"radium":14,"react":342}],110:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  titleBar: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    WebkitAppRegion: 'drag',
+    appRegion: 'drag',
+    cursor: 'default',
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    height: '31px',
+    backgroundColor: '#ffffff'
+  },
+
+  titleBarDark: {
+    backgroundColor: '#171717'
+  },
+
+  title: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default',
+    paddingLeft: '12px',
+    fontFamily: '"Segoe UI", "Arial"',
+    fontSize: '12px',
+    color: '#000000',
+    flex: 1
+  },
+
+  titleDark: {
+    color: '#ffffff'
+  },
+
+  unfocusedTitle: {
+    color: '#a9a9a9'
+  }
+};
+},{}],111:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _dec, _dec2, _dec3, _dec4, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _windows = require('../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _hidden = require('../../style/hidden');
+
+var _windows3 = require('../../style/color/windows');
+
+var _windows4 = require('../../style/theme/windows');
+
+var _windowFocus = require('../../windowFocus');
+
+var _windowFocus2 = _interopRequireDefault(_windowFocus);
+
+var _controls = require('./controls/controls');
+
+var _controls2 = _interopRequireDefault(_controls);
+
+var _windows5 = require('./styles/windows10');
+
+var _windows6 = _interopRequireDefault(_windows5);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TitleBar = (_dec = (0, _windows2.default)(function (nextProps, prevProps, background) {
+  return _extends({}, nextProps, { hasBackground: background });
+}), _dec2 = (0, _windowFocus2.default)(), _dec3 = (0, _windows4.ThemeContext)(), _dec4 = (0, _windows3.ColorContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = (_temp = _class2 = function (_Component) {
+  _inherits(TitleBar, _Component);
+
+  function TitleBar() {
+    _classCallCheck(this, TitleBar);
+
+    return _possibleConstructorReturn(this, (TitleBar.__proto__ || Object.getPrototypeOf(TitleBar)).apply(this, arguments));
+  }
+
+  _createClass(TitleBar, [{
+    key: 'getChildContext',
+    value: function getChildContext() {
+      return {
+        isMaximized: this.props.isMaximized
+      };
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var children = _props.children;
+      var style = _props.style;
+      var controls = _props.controls;
+      var title = _props.title;
+      var isWindowFocused = _props.isWindowFocused;
+      var hasBackground = _props.hasBackground;
+      var hidden = _props.hidden;
+
+      var props = _objectWithoutProperties(_props, ['children', 'style', 'controls', 'title', 'isWindowFocused', 'hasBackground', 'hidden']);
+
+      delete props.isMaximized;
+      delete props.onCloseClick;
+      delete props.onMinimizeClick;
+      delete props.onMaximizeClick;
+      delete props.onRestoreDownClick;
+
+      var componentStyle = _extends({}, _windows6.default.titleBar, style);
+      var titleStyle = _windows6.default.title;
+
+      if (!isWindowFocused && this.context.theme !== 'dark') {
+        titleStyle = _extends({}, titleStyle, _windows6.default.unfocusedTitle);
+      }
+
+      if (this.context.theme === 'dark') {
+        titleStyle = _extends({}, titleStyle, _windows6.default.titleDark);
+      }
+
+      componentStyle = _extends({}, componentStyle, {
+        visibility: !hidden ? 'visible' : 'hidden',
+        display: !hidden ? 'flex' : 'none'
+      });
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows6.default.titleBarDark);
+      }
+
+      var controlsComponent = !controls || _react2.default.createElement(_controls2.default, this.props);
+      var titleComponent = !title || _react2.default.createElement(
+        'div',
+        { style: titleStyle },
+        this.props.title
+      );
+
+      if (hasBackground) delete componentStyle.backgroundColor;
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          ref: 'element',
+          style: componentStyle
+        }, props),
+        titleComponent,
+        controlsComponent,
+        children
+      );
+    }
+  }]);
+
+  return TitleBar;
+}(_react.Component), _class2.propTypes = _extends({}, _hidden.hiddenPropTypes, _windows4.themePropTypes, _windows3.colorPropTypes, _windows.backgroundPropTypes, {
+  title: _react.PropTypes.string,
+  controls: _react.PropTypes.bool,
+  isMaximized: _react.PropTypes.bool,
+  onCloseClick: _react.PropTypes.func,
+  onMinimizeClick: _react.PropTypes.func,
+  onMaximizeClick: _react.PropTypes.func,
+  onRestoreDownClick: _react.PropTypes.func
+}), _class2.childContextTypes = {
+  isMaximized: _react.PropTypes.bool
+}, _class2.contextTypes = _extends({}, _windows4.themeContextTypes), _temp)) || _class) || _class) || _class) || _class);
+exports.default = TitleBar;
+},{"../../style/background/windows":94,"../../style/color/windows":95,"../../style/hidden":97,"../../style/theme/windows":100,"../../windowFocus":113,"./controls/controls":107,"./styles/windows10":110,"react":342}],112:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _width = require('../../style/width');
+
+var _width2 = _interopRequireDefault(_width);
+
+var _margin = require('../../style/margin');
+
+var _margin2 = _interopRequireDefault(_margin);
+
+var _padding = require('../../style/padding');
+
+var _padding2 = _interopRequireDefault(_padding);
+
+var _alignment = require('../../style/alignment');
+
+var _alignment2 = _interopRequireDefault(_alignment);
+
+var _windows = require('../../style/background/windows');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _dimension = require('../../style/dimension');
+
+var _dimension2 = _interopRequireDefault(_dimension);
+
+var _windows3 = require('../../style/color/windows');
+
+var _windows4 = require('../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var styles = {
+  display: 'flex',
+  position: 'relative'
+};
+
+var View = (_dec = (0, _width2.default)(), _dec2 = (0, _dimension2.default)(), _dec3 = (0, _alignment2.default)(), _dec4 = (0, _margin2.default)(), _dec5 = (0, _padding2.default)(), _dec6 = (0, _windows2.default)(), _dec7 = (0, _hidden2.default)(), _dec8 = (0, _windows3.ColorContext)(), _dec9 = (0, _windows4.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = _dec7(_class = _dec8(_class = _dec9(_class = (_temp = _class2 = function (_Component) {
+  _inherits(View, _Component);
+
+  function View() {
+    _classCallCheck(this, View);
+
+    return _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).apply(this, arguments));
+  }
+
+  _createClass(View, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var horizontalAlignment = _props.horizontalAlignment;
+      var children = _props.children;
+      var style = _props.style;
+      var direction = _props.direction;
+      var layout = _props.layout;
+
+      var props = _objectWithoutProperties(_props, ['horizontalAlignment', 'children', 'style', 'direction', 'layout']);
+
+      var componentStyle = _extends({}, styles, style);
+
+      if (direction) {
+        // direction will be deprecated on v0.3 and a warning will be shown
+        layout = direction === 'column' ? 'vertical' : 'horizontal';
+      }
+
+      if (layout === 'vertical') {
+        componentStyle.flexDirection = 'column';
+        if (horizontalAlignment) {
+          switch (horizontalAlignment) {
+            case 'center':
+              componentStyle.alignItems = 'center';break;
+            case 'left':
+              componentStyle.alignItems = 'flex-start';break;
+            case 'right':
+              componentStyle.alignItems = 'flex-end';break;
+          }
+        }
+      } else {
+        if (horizontalAlignment) {
+          switch (horizontalAlignment) {
+            case 'center':
+              componentStyle.justifyContent = 'center';break;
+            case 'left':
+              componentStyle.justifyContent = 'flex-start';break;
+            case 'right':
+              componentStyle.justifyContent = 'flex-end';break;
+          }
+        }
+      }
+
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        children
+      );
+    }
+  }]);
+
+  return View;
+}(_react.Component), _class2.propTypes = _extends({}, _alignment.alignmentPropTypes, _width.widthPropTypes, _margin.marginPropTypes, _padding.paddingPropTypes, _windows.backgroundContextTypes, _hidden.hiddenPropTypes, _dimension.dimensionPropTypes, {
+  direction: _react.PropTypes.string,
+  layout: _react.PropTypes.string
+}), _class2.defaultProps = {
+  layout: 'horizontal'
+}, _temp)) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class) || _class);
+exports.default = View;
+},{"../../style/alignment":93,"../../style/background/windows":94,"../../style/color/windows":95,"../../style/dimension":96,"../../style/hidden":97,"../../style/margin":98,"../../style/padding":99,"../../style/theme/windows":100,"../../style/width":101,"react":342}],113:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.default = function () {
+  for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
+    options[_key] = arguments[_key];
+  }
+
+  if (options.length === 1 && typeof options[0] === 'function') return WindowFocus.apply(null, [[], options[0]]);
+  return WindowFocus.bind(null, options);
+};
+
+var _monitor = require('./monitor');
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function WindowFocus(options, ComposedComponent) {
+  return function (_Component) {
+    _inherits(_class2, _Component);
+
+    function _class2() {
+      _classCallCheck(this, _class2);
+
+      var _this = _possibleConstructorReturn(this, (_class2.__proto__ || Object.getPrototypeOf(_class2)).call(this));
+
+      _this.windowFocus = function () {
+        _this.setState({ isWindowFocused: true });
+      };
+
+      _this.windowBlur = function () {
+        _this.setState({ isWindowFocused: false });
+      };
+
+      _this.state = {
+        isWindowFocused: (0, _monitor.windowIsFocused)()
+      };
+      return _this;
+    }
+
+    _createClass(_class2, [{
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        if (typeof window !== 'undefined') {
+          window.addEventListener('focus', this.windowFocus);
+          window.addEventListener('blur', this.windowBlur);
+        }
+      }
+    }, {
+      key: 'componentWillUnmount',
+      value: function componentWillUnmount() {
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('focus', this.windowFocus);
+          window.removeEventListener('blur', this.windowBlur);
+        }
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        return _react2.default.createElement(ComposedComponent, _extends({ isWindowFocused: this.state.isWindowFocused }, this.props));
+      }
+    }]);
+
+    return _class2;
+  }(_react.Component);
+}
+},{"./monitor":76,"react":342}],114:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  window: {
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    cursor: 'default',
+    backgroundColor: '#ffffff',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 'none',
+    boxSizing: 'border-box'
+  },
+
+  windowDark: {
+    backgroundColor: '#171717'
+  },
+
+  chrome: {
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    boxShadow: '0 2px 11px 3px rgba(0, 0, 0, .2)'
+  },
+
+  unfocused: {
+    borderColor: '#aaaaaa'
+  },
+
+  content: {
+    flexGrow: '1',
+    display: 'flex'
+  }
+};
+},{}],115:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _temp;
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _titleBar = require('../../titleBar/windows/titleBar');
+
+var _titleBar2 = _interopRequireDefault(_titleBar);
+
+var _view = require('../../view/windows/view');
+
+var _view2 = _interopRequireDefault(_view);
+
+var _windows = require('./styles/windows10');
+
+var _windows2 = _interopRequireDefault(_windows);
+
+var _windowFocus = require('../../windowFocus');
+
+var _windowFocus2 = _interopRequireDefault(_windowFocus);
+
+var _padding = require('../../style/padding');
+
+var _padding2 = _interopRequireDefault(_padding);
+
+var _alignment = require('../../style/alignment');
+
+var _alignment2 = _interopRequireDefault(_alignment);
+
+var _hidden = require('../../style/hidden');
+
+var _hidden2 = _interopRequireDefault(_hidden);
+
+var _dimension = require('../../style/dimension');
+
+var _dimension2 = _interopRequireDefault(_dimension);
+
+var _windows3 = require('../../style/color/windows');
+
+var _windows4 = require('../../style/theme/windows');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Window = (_dec = (0, _windowFocus2.default)(), _dec2 = (0, _alignment2.default)(), _dec3 = (0, _hidden2.default)(), _dec4 = (0, _dimension2.default)({ width: '100vw', height: '100vh' }), _dec5 = (0, _windows3.ColorContext)(), _dec6 = (0, _windows4.ThemeContext)(), _dec(_class = _dec2(_class = _dec3(_class = _dec4(_class = _dec5(_class = _dec6(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Window, _Component);
+
+  function Window() {
+    _classCallCheck(this, Window);
+
+    return _possibleConstructorReturn(this, (Window.__proto__ || Object.getPrototypeOf(Window)).apply(this, arguments));
+  }
+
+  _createClass(Window, [{
+    key: 'filterChildren',
+    value: function filterChildren() {
+      var titleBar = '';
+      var otherChildren = [];
+      _react.Children.map(this.props.children, function (element) {
+        if (element.type === _titleBar2.default) {
+          titleBar = element;
+        } else {
+          otherChildren = [].concat(_toConsumableArray(otherChildren), [element]);
+        }
+      });
+
+      return [titleBar].concat(_toConsumableArray(otherChildren));
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var style = _props.style;
+      var chrome = _props.chrome;
+      var isWindowFocused = _props.isWindowFocused;
+
+      var props = _objectWithoutProperties(_props, ['style', 'chrome', 'isWindowFocused']);
+
+      var componentStyle = _extends({}, _windows2.default.window, style);
+      if (chrome) {
+        componentStyle = _extends({}, componentStyle, _windows2.default.chrome, {
+          borderColor: this.context.color
+        });
+
+        if (!isWindowFocused) {
+          componentStyle = _extends({}, componentStyle, _windows2.default.unfocused);
+        }
+      }
+
+      if (this.context.theme === 'dark') {
+        componentStyle = _extends({}, componentStyle, _windows2.default.windowDark);
+      }
+
+      //if (this.state.background) {
+      //componentStyle = { ...componentStyle, backgroundColor: this.state.background };
+      //}
+
+      var _filterChildren = this.filterChildren();
+
+      var _filterChildren2 = _toArray(_filterChildren);
+
+      var titleBar = _filterChildren2[0];
+
+      var children = _filterChildren2.slice(1);
+
+      var content = (0, _padding2.default)(_react2.default.createElement(
+        _view2.default,
+        { ref: 'content', style: _windows2.default.content },
+        children
+      ), this.props);
+
+      props = (0, _padding.removePaddingProps)(props);
+      return _react2.default.createElement(
+        'div',
+        _extends({
+          style: componentStyle
+        }, props),
+        titleBar,
+        content
+      );
+    }
+  }]);
+
+  return Window;
+}(_react.Component), _class2.propTypes = _extends({}, _windows3.colorPropTypes, _windows4.themePropTypes, _padding.paddingPropTypes, _alignment.alignmentPropTypes, _hidden.hiddenPropTypes, _dimension.dimensionPropTypes, {
+  chrome: _react.PropTypes.bool
+}), _class2.contextTypes = _extends({}, _windows3.colorContextTypes, _windows4.themeContextTypes), _temp)) || _class) || _class) || _class) || _class) || _class) || _class);
+exports.default = Window;
+},{"../../style/alignment":93,"../../style/color/windows":95,"../../style/dimension":96,"../../style/hidden":97,"../../style/padding":99,"../../style/theme/windows":100,"../../titleBar/windows/titleBar":111,"../../view/windows/view":112,"../../windowFocus":113,"./styles/windows10":114,"react":342}],116:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _button = require('./src/button/windows/button');
+
+Object.defineProperty(exports, 'Button', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_button).default;
+  }
+});
+
+var _checkbox = require('./src/checkbox/windows/checkbox');
+
+Object.defineProperty(exports, 'Checkbox', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_checkbox).default;
+  }
+});
+
+var _label = require('./src/label/windows/label');
+
+Object.defineProperty(exports, 'Label', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_label).default;
+  }
+});
+
+var _masterDetailsView = require('./src/masterDetailsView/windows/masterDetailsView');
+
+Object.defineProperty(exports, 'MasterDetailsView', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_masterDetailsView).default;
+  }
+});
+
+var _item = require('./src/masterDetailsView/windows/item/item');
+
+Object.defineProperty(exports, 'MasterDetailsViewItem', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_item).default;
+  }
+});
+
+var _master = require('./src/masterDetailsView/windows/master/master');
+
+Object.defineProperty(exports, 'MasterDetailsViewItemMaster', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_master).default;
+  }
+});
+
+var _details = require('./src/masterDetailsView/windows/details/details');
+
+Object.defineProperty(exports, 'MasterDetailsViewItemDetails', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_details).default;
+  }
+});
+
+var _navPane = require('./src/navPane/windows/navPane');
+
+Object.defineProperty(exports, 'NavPane', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_navPane).default;
+  }
+});
+
+var _item2 = require('./src/navPane/windows/item/item');
+
+Object.defineProperty(exports, 'NavPaneItem', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_item2).default;
+  }
+});
+
+var _progressCircle = require('./src/progressCircle/windows/progressCircle');
+
+Object.defineProperty(exports, 'ProgressCircle', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_progressCircle).default;
+  }
+});
+
+var _radio = require('./src/radio/windows/radio');
+
+Object.defineProperty(exports, 'Radio', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_radio).default;
+  }
+});
+
+var _text = require('./src/text/windows/text');
+
+Object.defineProperty(exports, 'Text', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_text).default;
+  }
+});
+
+var _textInput = require('./src/textInput/windows/textInput');
+
+Object.defineProperty(exports, 'TextInput', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_textInput).default;
+  }
+});
+
+var _titleBar = require('./src/titleBar/windows/titleBar');
+
+Object.defineProperty(exports, 'TitleBar', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_titleBar).default;
+  }
+});
+
+var _view = require('./src/view/windows/view');
+
+Object.defineProperty(exports, 'View', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_view).default;
+  }
+});
+
+var _window = require('./src/window/windows/window');
+
+Object.defineProperty(exports, 'Window', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_window).default;
+  }
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+},{"./src/button/windows/button":65,"./src/checkbox/windows/checkbox":67,"./src/label/windows/label":70,"./src/masterDetailsView/windows/details/details":71,"./src/masterDetailsView/windows/item/item":72,"./src/masterDetailsView/windows/master/master":74,"./src/masterDetailsView/windows/masterDetailsView":73,"./src/navPane/windows/item/item":78,"./src/navPane/windows/navPane":80,"./src/progressCircle/windows/progressCircle":87,"./src/radio/windows/radio":90,"./src/text/windows/text":105,"./src/textInput/windows/textInput":103,"./src/titleBar/windows/titleBar":111,"./src/view/windows/view":112,"./src/window/windows/window":115}],117:[function(require,module,exports){
+'use strict';
+
 module.exports = require('react/lib/ReactDOM');
 
-},{"react/lib/ReactDOM":97}],4:[function(require,module,exports){
+},{"react/lib/ReactDOM":211}],118:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -10496,7 +19561,7 @@ function mapAsync(array, work, callback) {
     });
   });
 }
-},{}],5:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10618,7 +19683,7 @@ function ContextSubscriber(name) {
     }
   }, _ref4;
 }
-},{"react":228}],6:[function(require,module,exports){
+},{"react":342}],120:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10647,7 +19712,7 @@ var IndexLink = _react2.default.createClass({
 
 exports.default = IndexLink;
 module.exports = exports['default'];
-},{"./Link":10,"react":228}],7:[function(require,module,exports){
+},{"./Link":124,"react":342}],121:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10714,7 +19779,7 @@ var IndexRedirect = _react2.default.createClass({
 exports.default = IndexRedirect;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./InternalPropTypes":9,"./Redirect":14,"./routerWarning":34,"_process":1,"invariant":58,"react":228}],8:[function(require,module,exports){
+},{"./InternalPropTypes":123,"./Redirect":128,"./routerWarning":148,"_process":1,"invariant":172,"react":342}],122:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10778,7 +19843,7 @@ var IndexRoute = _react2.default.createClass({
 exports.default = IndexRoute;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./InternalPropTypes":9,"./RouteUtils":16,"./routerWarning":34,"_process":1,"invariant":58,"react":228}],9:[function(require,module,exports){
+},{"./InternalPropTypes":123,"./RouteUtils":130,"./routerWarning":148,"_process":1,"invariant":172,"react":342}],123:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10811,7 +19876,7 @@ var component = exports.component = oneOfType([func, string]);
 var components = exports.components = oneOfType([component, object]);
 var route = exports.route = oneOfType([object, element]);
 var routes = exports.routes = oneOfType([route, arrayOf(route)]);
-},{"react":228}],10:[function(require,module,exports){
+},{"react":342}],124:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -10972,7 +20037,7 @@ var Link = _react2.default.createClass({
 exports.default = Link;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./ContextUtils":5,"./PropTypes":13,"_process":1,"invariant":58,"react":228}],11:[function(require,module,exports){
+},{"./ContextUtils":119,"./PropTypes":127,"_process":1,"invariant":172,"react":342}],125:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -11211,7 +20276,7 @@ function formatPattern(pattern, params) {
   return pathname.replace(/\/+/g, '/');
 }
 }).call(this,require('_process'))
-},{"_process":1,"invariant":58}],12:[function(require,module,exports){
+},{"_process":1,"invariant":172}],126:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -11219,7 +20284,7 @@ exports.isPromise = isPromise;
 function isPromise(obj) {
   return obj && typeof obj.then === 'function';
 }
-},{}],13:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -11248,7 +20313,7 @@ var locationShape = exports.locationShape = shape({
   action: string.isRequired,
   key: string
 });
-},{"react":228}],14:[function(require,module,exports){
+},{"react":342}],128:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -11354,7 +20419,7 @@ var Redirect = _react2.default.createClass({
 exports.default = Redirect;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./InternalPropTypes":9,"./PatternUtils":11,"./RouteUtils":16,"_process":1,"invariant":58,"react":228}],15:[function(require,module,exports){
+},{"./InternalPropTypes":123,"./PatternUtils":125,"./RouteUtils":130,"_process":1,"invariant":172,"react":342}],129:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -11415,7 +20480,7 @@ var Route = _react2.default.createClass({
 exports.default = Route;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./InternalPropTypes":9,"./RouteUtils":16,"_process":1,"invariant":58,"react":228}],16:[function(require,module,exports){
+},{"./InternalPropTypes":123,"./RouteUtils":130,"_process":1,"invariant":172,"react":342}],130:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -11509,7 +20574,7 @@ function createRoutes(routes) {
 
   return routes;
 }
-},{"react":228}],17:[function(require,module,exports){
+},{"react":342}],131:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -11687,7 +20752,7 @@ var Router = _react2.default.createClass({
 exports.default = Router;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./InternalPropTypes":9,"./RouteUtils":16,"./RouterContext":18,"./RouterUtils":19,"./createTransitionManager":26,"./routerWarning":34,"_process":1,"invariant":58,"react":228}],18:[function(require,module,exports){
+},{"./InternalPropTypes":123,"./RouteUtils":130,"./RouterContext":132,"./RouterUtils":133,"./createTransitionManager":140,"./routerWarning":148,"_process":1,"invariant":172,"react":342}],132:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -11823,7 +20888,7 @@ var RouterContext = _react2.default.createClass({
 exports.default = RouterContext;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./ContextUtils":5,"./RouteUtils":16,"./getRouteParams":28,"_process":1,"invariant":58,"react":228}],19:[function(require,module,exports){
+},{"./ContextUtils":119,"./RouteUtils":130,"./getRouteParams":142,"_process":1,"invariant":172,"react":342}],133:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -11852,7 +20917,7 @@ function assignRouterState(router, _ref) {
 
   return router;
 }
-},{}],20:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12008,7 +21073,7 @@ function runLeaveHooks(routes, prevState) {
     if (routes[i].onLeave) routes[i].onLeave.call(routes[i], prevState);
   }
 }
-},{"./AsyncUtils":4}],21:[function(require,module,exports){
+},{"./AsyncUtils":118}],135:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -12068,7 +21133,7 @@ exports.default = function () {
 
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./RouterContext":18,"./routerWarning":34,"_process":1,"react":228}],22:[function(require,module,exports){
+},{"./RouterContext":132,"./routerWarning":148,"_process":1,"react":342}],136:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12085,7 +21150,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = (0, _createRouterHistory2.default)(_createBrowserHistory2.default);
 module.exports = exports['default'];
-},{"./createRouterHistory":25,"history/lib/createBrowserHistory":47}],23:[function(require,module,exports){
+},{"./createRouterHistory":139,"history/lib/createBrowserHistory":161}],137:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12163,7 +21228,7 @@ function computeChangedRoutes(prevState, nextState) {
 
 exports.default = computeChangedRoutes;
 module.exports = exports['default'];
-},{"./PatternUtils":11}],24:[function(require,module,exports){
+},{"./PatternUtils":125}],138:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12195,7 +21260,7 @@ function createMemoryHistory(options) {
   return history;
 }
 module.exports = exports['default'];
-},{"history/lib/createMemoryHistory":50,"history/lib/useBasename":52,"history/lib/useQueries":53}],25:[function(require,module,exports){
+},{"history/lib/createMemoryHistory":164,"history/lib/useBasename":166,"history/lib/useQueries":167}],139:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12215,7 +21280,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
 module.exports = exports['default'];
-},{"./useRouterHistory":35}],26:[function(require,module,exports){
+},{"./useRouterHistory":149}],140:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -12493,7 +21558,7 @@ function createTransitionManager(history, routes) {
 }
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./TransitionUtils":20,"./computeChangedRoutes":23,"./getComponents":27,"./isActive":31,"./matchRoutes":33,"./routerWarning":34,"_process":1}],27:[function(require,module,exports){
+},{"./TransitionUtils":134,"./computeChangedRoutes":137,"./getComponents":141,"./isActive":145,"./matchRoutes":147,"./routerWarning":148,"_process":1}],141:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12534,7 +21599,7 @@ function getComponents(nextState, callback) {
 
 exports.default = getComponents;
 module.exports = exports['default'];
-},{"./AsyncUtils":4,"./PromiseUtils":12}],28:[function(require,module,exports){
+},{"./AsyncUtils":118,"./PromiseUtils":126}],142:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12561,7 +21626,7 @@ function getRouteParams(route, params) {
 
 exports.default = getRouteParams;
 module.exports = exports['default'];
-},{"./PatternUtils":11}],29:[function(require,module,exports){
+},{"./PatternUtils":125}],143:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12578,7 +21643,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = (0, _createRouterHistory2.default)(_createHashHistory2.default);
 module.exports = exports['default'];
-},{"./createRouterHistory":25,"history/lib/createHashHistory":48}],30:[function(require,module,exports){
+},{"./createRouterHistory":139,"history/lib/createHashHistory":162}],144:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12704,7 +21769,7 @@ exports.applyRouterMiddleware = _applyRouterMiddleware3.default;
 exports.browserHistory = _browserHistory3.default;
 exports.hashHistory = _hashHistory3.default;
 exports.createMemoryHistory = _createMemoryHistory3.default;
-},{"./IndexLink":6,"./IndexRedirect":7,"./IndexRoute":8,"./Link":10,"./PatternUtils":11,"./PropTypes":13,"./Redirect":14,"./Route":15,"./RouteUtils":16,"./Router":17,"./RouterContext":18,"./applyRouterMiddleware":21,"./browserHistory":22,"./createMemoryHistory":24,"./hashHistory":29,"./match":32,"./useRouterHistory":35,"./withRouter":36}],31:[function(require,module,exports){
+},{"./IndexLink":120,"./IndexRedirect":121,"./IndexRoute":122,"./Link":124,"./PatternUtils":125,"./PropTypes":127,"./Redirect":128,"./Route":129,"./RouteUtils":130,"./Router":131,"./RouterContext":132,"./applyRouterMiddleware":135,"./browserHistory":136,"./createMemoryHistory":138,"./hashHistory":143,"./match":146,"./useRouterHistory":149,"./withRouter":150}],145:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12857,7 +21922,7 @@ function isActive(_ref, indexOnly, currentLocation, routes, params) {
   return queryIsActive(query, currentLocation.query);
 }
 module.exports = exports['default'];
-},{"./PatternUtils":11}],32:[function(require,module,exports){
+},{"./PatternUtils":125}],146:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -12932,7 +21997,7 @@ function match(_ref, callback) {
 exports.default = match;
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./RouteUtils":16,"./RouterUtils":19,"./createMemoryHistory":24,"./createTransitionManager":26,"_process":1,"history/lib/Actions":37,"invariant":58}],33:[function(require,module,exports){
+},{"./RouteUtils":130,"./RouterUtils":133,"./createMemoryHistory":138,"./createTransitionManager":140,"_process":1,"history/lib/Actions":151,"invariant":172}],147:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13188,7 +22253,7 @@ function matchRoutes(routes, location, callback, remainingPathname) {
 }
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./AsyncUtils":4,"./PatternUtils":11,"./PromiseUtils":12,"./RouteUtils":16,"./routerWarning":34,"_process":1}],34:[function(require,module,exports){
+},{"./AsyncUtils":118,"./PatternUtils":125,"./PromiseUtils":126,"./RouteUtils":130,"./routerWarning":148,"_process":1}],148:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13225,7 +22290,7 @@ function routerWarning(falseToWarn, message) {
 function _resetWarned() {
   warned = {};
 }
-},{"warning":59}],35:[function(require,module,exports){
+},{"warning":173}],149:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13248,7 +22313,7 @@ function useRouterHistory(createHistory) {
   };
 }
 module.exports = exports['default'];
-},{"history/lib/useBasename":52,"history/lib/useQueries":53}],36:[function(require,module,exports){
+},{"history/lib/useBasename":166,"history/lib/useQueries":167}],150:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13323,7 +22388,7 @@ function withRouter(WrappedComponent, options) {
 }
 module.exports = exports['default'];
 }).call(this,require('_process'))
-},{"./ContextUtils":5,"./PropTypes":13,"_process":1,"hoist-non-react-statics":57,"invariant":58,"react":228}],37:[function(require,module,exports){
+},{"./ContextUtils":119,"./PropTypes":127,"_process":1,"hoist-non-react-statics":171,"invariant":172,"react":342}],151:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13346,7 +22411,7 @@ var REPLACE = exports.REPLACE = 'REPLACE';
  * for more information.
  */
 var POP = exports.POP = 'POP';
-},{}],38:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -13403,7 +22468,7 @@ var loopAsync = exports.loopAsync = function loopAsync(turns, work, callback) {
 
   next();
 };
-},{}],39:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13502,7 +22567,7 @@ var replaceLocation = exports.replaceLocation = function replaceLocation(locatio
 var go = exports.go = function go(n) {
   if (n) window.history.go(n);
 };
-},{"./DOMStateStorage":40,"./DOMUtils":41,"./ExecutionEnvironment":42,"./LocationUtils":44,"./PathUtils":45}],40:[function(require,module,exports){
+},{"./DOMStateStorage":154,"./DOMUtils":155,"./ExecutionEnvironment":156,"./LocationUtils":158,"./PathUtils":159}],154:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13590,7 +22655,7 @@ var readState = exports.readState = function readState(key) {
   return undefined;
 };
 }).call(this,require('_process'))
-},{"_process":1,"warning":59}],41:[function(require,module,exports){
+},{"_process":1,"warning":173}],155:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13631,12 +22696,12 @@ var supportsGoWithoutReloadUsingHash = exports.supportsGoWithoutReloadUsingHash 
 var supportsPopstateOnHashchange = exports.supportsPopstateOnHashchange = function supportsPopstateOnHashchange() {
   return window.navigator.userAgent.indexOf('Trident') === -1;
 };
-},{}],42:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
 var canUseDOM = exports.canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
-},{}],43:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13775,7 +22840,7 @@ var replaceLocation = exports.replaceLocation = function replaceLocation(locatio
   });
 };
 }).call(this,require('_process'))
-},{"./BrowserProtocol":39,"./DOMStateStorage":40,"./DOMUtils":41,"./LocationUtils":44,"./PathUtils":45,"_process":1,"warning":59}],44:[function(require,module,exports){
+},{"./BrowserProtocol":153,"./DOMStateStorage":154,"./DOMUtils":155,"./LocationUtils":158,"./PathUtils":159,"_process":1,"warning":173}],158:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13870,7 +22935,7 @@ var locationsAreEqual = exports.locationsAreEqual = function locationsAreEqual(a
   a.pathname === b.pathname && a.search === b.search && a.hash === b.hash && statesAreEqual(a.state, b.state);
 };
 }).call(this,require('_process'))
-},{"./Actions":37,"./PathUtils":45,"_process":1,"invariant":58,"warning":59}],45:[function(require,module,exports){
+},{"./Actions":151,"./PathUtils":159,"_process":1,"invariant":172,"warning":173}],159:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -13974,7 +23039,7 @@ var createPath = exports.createPath = function createPath(location) {
   return path;
 };
 }).call(this,require('_process'))
-},{"_process":1,"warning":59}],46:[function(require,module,exports){
+},{"_process":1,"warning":173}],160:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -14012,7 +23077,7 @@ var replaceLocation = exports.replaceLocation = function replaceLocation(locatio
   window.location.replace((0, _PathUtils.createPath)(location));
   return false; // Don't update location
 };
-},{"./BrowserProtocol":39,"./LocationUtils":44,"./PathUtils":45}],47:[function(require,module,exports){
+},{"./BrowserProtocol":153,"./LocationUtils":158,"./PathUtils":159}],161:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -14108,7 +23173,7 @@ var createBrowserHistory = function createBrowserHistory() {
 
 exports.default = createBrowserHistory;
 }).call(this,require('_process'))
-},{"./BrowserProtocol":39,"./DOMUtils":41,"./ExecutionEnvironment":42,"./RefreshProtocol":46,"./createHistory":49,"_process":1,"invariant":58}],48:[function(require,module,exports){
+},{"./BrowserProtocol":153,"./DOMUtils":155,"./ExecutionEnvironment":156,"./RefreshProtocol":160,"./createHistory":163,"_process":1,"invariant":172}],162:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -14258,7 +23323,7 @@ var createHashHistory = function createHashHistory() {
 
 exports.default = createHashHistory;
 }).call(this,require('_process'))
-},{"./DOMUtils":41,"./ExecutionEnvironment":42,"./HashProtocol":43,"./createHistory":49,"_process":1,"invariant":58,"warning":59}],49:[function(require,module,exports){
+},{"./DOMUtils":155,"./ExecutionEnvironment":156,"./HashProtocol":157,"./createHistory":163,"_process":1,"invariant":172,"warning":173}],163:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -14435,7 +23500,7 @@ var createHistory = function createHistory() {
 };
 
 exports.default = createHistory;
-},{"./Actions":37,"./AsyncUtils":38,"./LocationUtils":44,"./PathUtils":45,"./runTransitionHook":51}],50:[function(require,module,exports){
+},{"./Actions":151,"./AsyncUtils":152,"./LocationUtils":158,"./PathUtils":159,"./runTransitionHook":165}],164:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -14578,7 +23643,7 @@ var createMemoryHistory = function createMemoryHistory() {
 
 exports.default = createMemoryHistory;
 }).call(this,require('_process'))
-},{"./Actions":37,"./LocationUtils":44,"./PathUtils":45,"./createHistory":49,"_process":1,"invariant":58,"warning":59}],51:[function(require,module,exports){
+},{"./Actions":151,"./LocationUtils":158,"./PathUtils":159,"./createHistory":163,"_process":1,"invariant":172,"warning":173}],165:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -14604,7 +23669,7 @@ var runTransitionHook = function runTransitionHook(hook, location, callback) {
 
 exports.default = runTransitionHook;
 }).call(this,require('_process'))
-},{"_process":1,"warning":59}],52:[function(require,module,exports){
+},{"_process":1,"warning":173}],166:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -14714,7 +23779,7 @@ var useBasename = function useBasename(createHistory) {
 };
 
 exports.default = useBasename;
-},{"./PathUtils":45,"./runTransitionHook":51}],53:[function(require,module,exports){
+},{"./PathUtils":159,"./runTransitionHook":165}],167:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -14836,7 +23901,7 @@ var useQueries = function useQueries(createHistory) {
 };
 
 exports.default = useQueries;
-},{"./LocationUtils":44,"./PathUtils":45,"./runTransitionHook":51,"query-string":54}],54:[function(require,module,exports){
+},{"./LocationUtils":158,"./PathUtils":159,"./runTransitionHook":165,"query-string":168}],168:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 var objectAssign = require('object-assign');
@@ -14936,7 +24001,7 @@ exports.stringify = function (obj, opts) {
 	}).join('&') : '';
 };
 
-},{"object-assign":55,"strict-uri-encode":56}],55:[function(require,module,exports){
+},{"object-assign":169,"strict-uri-encode":170}],169:[function(require,module,exports){
 'use strict';
 /* eslint-disable no-unused-vars */
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -15021,7 +24086,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],56:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -15029,7 +24094,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],57:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 /**
  * Copyright 2015, Yahoo! Inc.
  * Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
@@ -15081,7 +24146,7 @@ module.exports = function hoistNonReactStatics(targetComponent, sourceComponent,
     return targetComponent;
 };
 
-},{}],58:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -15136,7 +24201,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require('_process'))
-},{"_process":1}],59:[function(require,module,exports){
+},{"_process":1}],173:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -15200,7 +24265,7 @@ if (process.env.NODE_ENV !== 'production') {
 module.exports = warning;
 
 }).call(this,require('_process'))
-},{"_process":1}],60:[function(require,module,exports){
+},{"_process":1}],174:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -15225,7 +24290,7 @@ var AutoFocusUtils = {
 };
 
 module.exports = AutoFocusUtils;
-},{"./ReactDOMComponentTree":101,"fbjs/lib/focusNode":211}],61:[function(require,module,exports){
+},{"./ReactDOMComponentTree":215,"fbjs/lib/focusNode":325}],175:[function(require,module,exports){
 /**
  * Copyright 2013-present Facebook, Inc.
  * All rights reserved.
@@ -15616,7 +24681,7 @@ var BeforeInputEventPlugin = {
 };
 
 module.exports = BeforeInputEventPlugin;
-},{"./EventConstants":75,"./EventPropagators":79,"./FallbackCompositionState":80,"./SyntheticCompositionEvent":158,"./SyntheticInputEvent":162,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/keyOf":221}],62:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPropagators":193,"./FallbackCompositionState":194,"./SyntheticCompositionEvent":272,"./SyntheticInputEvent":276,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/keyOf":335}],176:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -15765,7 +24830,7 @@ var CSSProperty = {
 };
 
 module.exports = CSSProperty;
-},{}],63:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -15973,7 +25038,7 @@ var CSSPropertyOperations = {
 
 module.exports = CSSPropertyOperations;
 }).call(this,require('_process'))
-},{"./CSSProperty":62,"./ReactInstrumentation":131,"./dangerousStyleValue":176,"_process":1,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/camelizeStyleName":205,"fbjs/lib/hyphenateStyleName":216,"fbjs/lib/memoizeStringOnly":222,"fbjs/lib/warning":226}],64:[function(require,module,exports){
+},{"./CSSProperty":176,"./ReactInstrumentation":245,"./dangerousStyleValue":290,"_process":1,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/camelizeStyleName":319,"fbjs/lib/hyphenateStyleName":330,"fbjs/lib/memoizeStringOnly":336,"fbjs/lib/warning":340}],178:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -16082,7 +25147,7 @@ PooledClass.addPoolingTo(CallbackQueue);
 
 module.exports = CallbackQueue;
 }).call(this,require('_process'))
-},{"./PooledClass":84,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"object-assign":227}],65:[function(require,module,exports){
+},{"./PooledClass":198,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"object-assign":341}],179:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -16408,7 +25473,7 @@ var ChangeEventPlugin = {
 };
 
 module.exports = ChangeEventPlugin;
-},{"./EventConstants":75,"./EventPluginHub":76,"./EventPropagators":79,"./ReactDOMComponentTree":101,"./ReactUpdates":151,"./SyntheticEvent":160,"./getEventTarget":184,"./isEventSupported":191,"./isTextInputElement":192,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/keyOf":221}],66:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPluginHub":190,"./EventPropagators":193,"./ReactDOMComponentTree":215,"./ReactUpdates":265,"./SyntheticEvent":274,"./getEventTarget":298,"./isEventSupported":305,"./isTextInputElement":306,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/keyOf":335}],180:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -16605,7 +25670,7 @@ var DOMChildrenOperations = {
 
 module.exports = DOMChildrenOperations;
 }).call(this,require('_process'))
-},{"./DOMLazyTree":67,"./Danger":71,"./ReactDOMComponentTree":101,"./ReactInstrumentation":131,"./ReactMultiChildUpdateTypes":136,"./createMicrosoftUnsafeLocalFunction":175,"./setInnerHTML":197,"./setTextContent":198,"_process":1}],67:[function(require,module,exports){
+},{"./DOMLazyTree":181,"./Danger":185,"./ReactDOMComponentTree":215,"./ReactInstrumentation":245,"./ReactMultiChildUpdateTypes":250,"./createMicrosoftUnsafeLocalFunction":289,"./setInnerHTML":311,"./setTextContent":312,"_process":1}],181:[function(require,module,exports){
 /**
  * Copyright 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -16724,7 +25789,7 @@ DOMLazyTree.queueHTML = queueHTML;
 DOMLazyTree.queueText = queueText;
 
 module.exports = DOMLazyTree;
-},{"./DOMNamespaces":68,"./createMicrosoftUnsafeLocalFunction":175,"./setInnerHTML":197,"./setTextContent":198}],68:[function(require,module,exports){
+},{"./DOMNamespaces":182,"./createMicrosoftUnsafeLocalFunction":289,"./setInnerHTML":311,"./setTextContent":312}],182:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -16745,7 +25810,7 @@ var DOMNamespaces = {
 };
 
 module.exports = DOMNamespaces;
-},{}],69:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -16954,7 +26019,7 @@ var DOMProperty = {
 
 module.exports = DOMProperty;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],70:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],184:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -17178,7 +26243,7 @@ var DOMPropertyOperations = {
 
 module.exports = DOMPropertyOperations;
 }).call(this,require('_process'))
-},{"./DOMProperty":69,"./ReactDOMComponentTree":101,"./ReactInstrumentation":131,"./quoteAttributeValueForBrowser":194,"_process":1,"fbjs/lib/warning":226}],71:[function(require,module,exports){
+},{"./DOMProperty":183,"./ReactDOMComponentTree":215,"./ReactInstrumentation":245,"./quoteAttributeValueForBrowser":308,"_process":1,"fbjs/lib/warning":340}],185:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -17229,7 +26294,7 @@ var Danger = {
 
 module.exports = Danger;
 }).call(this,require('_process'))
-},{"./DOMLazyTree":67,"./reactProdInvariant":195,"_process":1,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/createNodesFromMarkup":208,"fbjs/lib/emptyFunction":209,"fbjs/lib/invariant":217}],72:[function(require,module,exports){
+},{"./DOMLazyTree":181,"./reactProdInvariant":309,"_process":1,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/createNodesFromMarkup":322,"fbjs/lib/emptyFunction":323,"fbjs/lib/invariant":331}],186:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -17257,7 +26322,7 @@ var keyOf = require('fbjs/lib/keyOf');
 var DefaultEventPluginOrder = [keyOf({ ResponderEventPlugin: null }), keyOf({ SimpleEventPlugin: null }), keyOf({ TapEventPlugin: null }), keyOf({ EnterLeaveEventPlugin: null }), keyOf({ ChangeEventPlugin: null }), keyOf({ SelectEventPlugin: null }), keyOf({ BeforeInputEventPlugin: null })];
 
 module.exports = DefaultEventPluginOrder;
-},{"fbjs/lib/keyOf":221}],73:[function(require,module,exports){
+},{"fbjs/lib/keyOf":335}],187:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -17308,7 +26373,7 @@ var DisabledInputUtils = {
 };
 
 module.exports = DisabledInputUtils;
-},{}],74:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -17414,7 +26479,7 @@ var EnterLeaveEventPlugin = {
 };
 
 module.exports = EnterLeaveEventPlugin;
-},{"./EventConstants":75,"./EventPropagators":79,"./ReactDOMComponentTree":101,"./SyntheticMouseEvent":164,"fbjs/lib/keyOf":221}],75:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPropagators":193,"./ReactDOMComponentTree":215,"./SyntheticMouseEvent":278,"fbjs/lib/keyOf":335}],189:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -17512,7 +26577,7 @@ var EventConstants = {
 };
 
 module.exports = EventConstants;
-},{"fbjs/lib/keyMirror":220}],76:[function(require,module,exports){
+},{"fbjs/lib/keyMirror":334}],190:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -17766,7 +26831,7 @@ var EventPluginHub = {
 
 module.exports = EventPluginHub;
 }).call(this,require('_process'))
-},{"./EventPluginRegistry":77,"./EventPluginUtils":78,"./ReactErrorUtils":122,"./accumulateInto":171,"./forEachAccumulated":180,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],77:[function(require,module,exports){
+},{"./EventPluginRegistry":191,"./EventPluginUtils":192,"./ReactErrorUtils":236,"./accumulateInto":285,"./forEachAccumulated":294,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],191:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -18016,7 +27081,7 @@ var EventPluginRegistry = {
 
 module.exports = EventPluginRegistry;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],78:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],192:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -18248,7 +27313,7 @@ var EventPluginUtils = {
 
 module.exports = EventPluginUtils;
 }).call(this,require('_process'))
-},{"./EventConstants":75,"./ReactErrorUtils":122,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],79:[function(require,module,exports){
+},{"./EventConstants":189,"./ReactErrorUtils":236,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],193:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -18388,7 +27453,7 @@ var EventPropagators = {
 
 module.exports = EventPropagators;
 }).call(this,require('_process'))
-},{"./EventConstants":75,"./EventPluginHub":76,"./EventPluginUtils":78,"./accumulateInto":171,"./forEachAccumulated":180,"_process":1,"fbjs/lib/warning":226}],80:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPluginHub":190,"./EventPluginUtils":192,"./accumulateInto":285,"./forEachAccumulated":294,"_process":1,"fbjs/lib/warning":340}],194:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -18484,7 +27549,7 @@ _assign(FallbackCompositionState.prototype, {
 PooledClass.addPoolingTo(FallbackCompositionState);
 
 module.exports = FallbackCompositionState;
-},{"./PooledClass":84,"./getTextContentAccessor":188,"object-assign":227}],81:[function(require,module,exports){
+},{"./PooledClass":198,"./getTextContentAccessor":302,"object-assign":341}],195:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -18697,7 +27762,7 @@ var HTMLDOMPropertyConfig = {
 };
 
 module.exports = HTMLDOMPropertyConfig;
-},{"./DOMProperty":69}],82:[function(require,module,exports){
+},{"./DOMProperty":183}],196:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -18757,7 +27822,7 @@ var KeyEscapeUtils = {
 };
 
 module.exports = KeyEscapeUtils;
-},{}],83:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -18896,7 +27961,7 @@ var LinkedValueUtils = {
 
 module.exports = LinkedValueUtils;
 }).call(this,require('_process'))
-},{"./ReactPropTypeLocations":141,"./ReactPropTypes":142,"./ReactPropTypesSecret":143,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],84:[function(require,module,exports){
+},{"./ReactPropTypeLocations":255,"./ReactPropTypes":256,"./ReactPropTypesSecret":257,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],198:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -19020,7 +28085,7 @@ var PooledClass = {
 
 module.exports = PooledClass;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],85:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],199:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -19112,7 +28177,7 @@ var React = {
 
 module.exports = React;
 }).call(this,require('_process'))
-},{"./ReactChildren":88,"./ReactClass":90,"./ReactComponent":91,"./ReactDOMFactories":104,"./ReactElement":119,"./ReactElementValidator":120,"./ReactPropTypes":142,"./ReactPureComponent":144,"./ReactVersion":152,"./onlyChild":193,"_process":1,"fbjs/lib/warning":226,"object-assign":227}],86:[function(require,module,exports){
+},{"./ReactChildren":202,"./ReactClass":204,"./ReactComponent":205,"./ReactDOMFactories":218,"./ReactElement":233,"./ReactElementValidator":234,"./ReactPropTypes":256,"./ReactPureComponent":258,"./ReactVersion":266,"./onlyChild":307,"_process":1,"fbjs/lib/warning":340,"object-assign":341}],200:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -19443,7 +28508,7 @@ var ReactBrowserEventEmitter = _assign({}, ReactEventEmitterMixin, {
 });
 
 module.exports = ReactBrowserEventEmitter;
-},{"./EventConstants":75,"./EventPluginRegistry":77,"./ReactEventEmitterMixin":123,"./ViewportMetrics":170,"./getVendorPrefixedEventName":189,"./isEventSupported":191,"object-assign":227}],87:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPluginRegistry":191,"./ReactEventEmitterMixin":237,"./ViewportMetrics":284,"./getVendorPrefixedEventName":303,"./isEventSupported":305,"object-assign":341}],201:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -19600,7 +28665,7 @@ var ReactChildReconciler = {
 
 module.exports = ReactChildReconciler;
 }).call(this,require('_process'))
-},{"./KeyEscapeUtils":82,"./ReactComponentTreeHook":94,"./ReactReconciler":146,"./instantiateReactComponent":190,"./shouldUpdateReactComponent":199,"./traverseAllChildren":200,"_process":1,"fbjs/lib/warning":226}],88:[function(require,module,exports){
+},{"./KeyEscapeUtils":196,"./ReactComponentTreeHook":208,"./ReactReconciler":260,"./instantiateReactComponent":304,"./shouldUpdateReactComponent":313,"./traverseAllChildren":314,"_process":1,"fbjs/lib/warning":340}],202:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -19792,7 +28857,7 @@ var ReactChildren = {
 };
 
 module.exports = ReactChildren;
-},{"./PooledClass":84,"./ReactElement":119,"./traverseAllChildren":200,"fbjs/lib/emptyFunction":209}],89:[function(require,module,exports){
+},{"./PooledClass":198,"./ReactElement":233,"./traverseAllChildren":314,"fbjs/lib/emptyFunction":323}],203:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -19849,7 +28914,7 @@ var ReactChildrenMutationWarningHook = {
 
 module.exports = ReactChildrenMutationWarningHook;
 }).call(this,require('_process'))
-},{"./ReactComponentTreeHook":94,"_process":1,"fbjs/lib/warning":226}],90:[function(require,module,exports){
+},{"./ReactComponentTreeHook":208,"_process":1,"fbjs/lib/warning":340}],204:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -20584,7 +29649,7 @@ var ReactClass = {
 
 module.exports = ReactClass;
 }).call(this,require('_process'))
-},{"./ReactComponent":91,"./ReactElement":119,"./ReactNoopUpdateQueue":138,"./ReactPropTypeLocationNames":140,"./ReactPropTypeLocations":141,"./reactProdInvariant":195,"_process":1,"fbjs/lib/emptyObject":210,"fbjs/lib/invariant":217,"fbjs/lib/keyMirror":220,"fbjs/lib/keyOf":221,"fbjs/lib/warning":226,"object-assign":227}],91:[function(require,module,exports){
+},{"./ReactComponent":205,"./ReactElement":233,"./ReactNoopUpdateQueue":252,"./ReactPropTypeLocationNames":254,"./ReactPropTypeLocations":255,"./reactProdInvariant":309,"_process":1,"fbjs/lib/emptyObject":324,"fbjs/lib/invariant":331,"fbjs/lib/keyMirror":334,"fbjs/lib/keyOf":335,"fbjs/lib/warning":340,"object-assign":341}],205:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -20705,7 +29770,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = ReactComponent;
 }).call(this,require('_process'))
-},{"./ReactNoopUpdateQueue":138,"./canDefineProperty":173,"./reactProdInvariant":195,"_process":1,"fbjs/lib/emptyObject":210,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],92:[function(require,module,exports){
+},{"./ReactNoopUpdateQueue":252,"./canDefineProperty":287,"./reactProdInvariant":309,"_process":1,"fbjs/lib/emptyObject":324,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],206:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -20736,7 +29801,7 @@ var ReactComponentBrowserEnvironment = {
 };
 
 module.exports = ReactComponentBrowserEnvironment;
-},{"./DOMChildrenOperations":66,"./ReactDOMIDOperations":106}],93:[function(require,module,exports){
+},{"./DOMChildrenOperations":180,"./ReactDOMIDOperations":220}],207:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -20784,7 +29849,7 @@ var ReactComponentEnvironment = {
 
 module.exports = ReactComponentEnvironment;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],94:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],208:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2016-present, Facebook, Inc.
@@ -21129,7 +30194,7 @@ var ReactComponentTreeHook = {
 
 module.exports = ReactComponentTreeHook;
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":96,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],95:[function(require,module,exports){
+},{"./ReactCurrentOwner":210,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],209:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -22036,7 +31101,7 @@ var ReactCompositeComponent = {
 
 module.exports = ReactCompositeComponent;
 }).call(this,require('_process'))
-},{"./ReactComponentEnvironment":93,"./ReactCurrentOwner":96,"./ReactElement":119,"./ReactErrorUtils":122,"./ReactInstanceMap":130,"./ReactInstrumentation":131,"./ReactNodeTypes":137,"./ReactPropTypeLocations":141,"./ReactReconciler":146,"./checkReactTypeSpec":174,"./reactProdInvariant":195,"./shouldUpdateReactComponent":199,"_process":1,"fbjs/lib/emptyObject":210,"fbjs/lib/invariant":217,"fbjs/lib/shallowEqual":225,"fbjs/lib/warning":226,"object-assign":227}],96:[function(require,module,exports){
+},{"./ReactComponentEnvironment":207,"./ReactCurrentOwner":210,"./ReactElement":233,"./ReactErrorUtils":236,"./ReactInstanceMap":244,"./ReactInstrumentation":245,"./ReactNodeTypes":251,"./ReactPropTypeLocations":255,"./ReactReconciler":260,"./checkReactTypeSpec":288,"./reactProdInvariant":309,"./shouldUpdateReactComponent":313,"_process":1,"fbjs/lib/emptyObject":324,"fbjs/lib/invariant":331,"fbjs/lib/shallowEqual":339,"fbjs/lib/warning":340,"object-assign":341}],210:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -22068,7 +31133,7 @@ var ReactCurrentOwner = {
 };
 
 module.exports = ReactCurrentOwner;
-},{}],97:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -22181,7 +31246,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = ReactDOM;
 }).call(this,require('_process'))
-},{"./ReactDOMComponentTree":101,"./ReactDOMNullInputValuePropHook":108,"./ReactDOMUnknownPropertyHook":115,"./ReactDefaultInjection":118,"./ReactInstrumentation":131,"./ReactMount":134,"./ReactReconciler":146,"./ReactUpdates":151,"./ReactVersion":152,"./findDOMNode":178,"./getHostComponentFromComposite":185,"./renderSubtreeIntoContainer":196,"_process":1,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/warning":226}],98:[function(require,module,exports){
+},{"./ReactDOMComponentTree":215,"./ReactDOMNullInputValuePropHook":222,"./ReactDOMUnknownPropertyHook":229,"./ReactDefaultInjection":232,"./ReactInstrumentation":245,"./ReactMount":248,"./ReactReconciler":260,"./ReactUpdates":265,"./ReactVersion":266,"./findDOMNode":292,"./getHostComponentFromComposite":299,"./renderSubtreeIntoContainer":310,"_process":1,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/warning":340}],212:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -22206,7 +31271,7 @@ var ReactDOMButton = {
 };
 
 module.exports = ReactDOMButton;
-},{"./DisabledInputUtils":73}],99:[function(require,module,exports){
+},{"./DisabledInputUtils":187}],213:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -23215,7 +32280,7 @@ _assign(ReactDOMComponent.prototype, ReactDOMComponent.Mixin, ReactMultiChild.Mi
 
 module.exports = ReactDOMComponent;
 }).call(this,require('_process'))
-},{"./AutoFocusUtils":60,"./CSSPropertyOperations":63,"./DOMLazyTree":67,"./DOMNamespaces":68,"./DOMProperty":69,"./DOMPropertyOperations":70,"./EventConstants":75,"./EventPluginHub":76,"./EventPluginRegistry":77,"./ReactBrowserEventEmitter":86,"./ReactDOMButton":98,"./ReactDOMComponentFlags":100,"./ReactDOMComponentTree":101,"./ReactDOMInput":107,"./ReactDOMOption":109,"./ReactDOMSelect":110,"./ReactDOMTextarea":113,"./ReactInstrumentation":131,"./ReactMultiChild":135,"./ReactServerRenderingTransaction":148,"./escapeTextContentForBrowser":177,"./isEventSupported":191,"./reactProdInvariant":195,"./validateDOMNesting":201,"_process":1,"fbjs/lib/emptyFunction":209,"fbjs/lib/invariant":217,"fbjs/lib/keyOf":221,"fbjs/lib/shallowEqual":225,"fbjs/lib/warning":226,"object-assign":227}],100:[function(require,module,exports){
+},{"./AutoFocusUtils":174,"./CSSPropertyOperations":177,"./DOMLazyTree":181,"./DOMNamespaces":182,"./DOMProperty":183,"./DOMPropertyOperations":184,"./EventConstants":189,"./EventPluginHub":190,"./EventPluginRegistry":191,"./ReactBrowserEventEmitter":200,"./ReactDOMButton":212,"./ReactDOMComponentFlags":214,"./ReactDOMComponentTree":215,"./ReactDOMInput":221,"./ReactDOMOption":223,"./ReactDOMSelect":224,"./ReactDOMTextarea":227,"./ReactInstrumentation":245,"./ReactMultiChild":249,"./ReactServerRenderingTransaction":262,"./escapeTextContentForBrowser":291,"./isEventSupported":305,"./reactProdInvariant":309,"./validateDOMNesting":315,"_process":1,"fbjs/lib/emptyFunction":323,"fbjs/lib/invariant":331,"fbjs/lib/keyOf":335,"fbjs/lib/shallowEqual":339,"fbjs/lib/warning":340,"object-assign":341}],214:[function(require,module,exports){
 /**
  * Copyright 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -23234,7 +32299,7 @@ var ReactDOMComponentFlags = {
 };
 
 module.exports = ReactDOMComponentFlags;
-},{}],101:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -23425,7 +32490,7 @@ var ReactDOMComponentTree = {
 
 module.exports = ReactDOMComponentTree;
 }).call(this,require('_process'))
-},{"./DOMProperty":69,"./ReactDOMComponentFlags":100,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],102:[function(require,module,exports){
+},{"./DOMProperty":183,"./ReactDOMComponentFlags":214,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],216:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -23461,7 +32526,7 @@ function ReactDOMContainerInfo(topLevelWrapper, node) {
 
 module.exports = ReactDOMContainerInfo;
 }).call(this,require('_process'))
-},{"./validateDOMNesting":201,"_process":1}],103:[function(require,module,exports){
+},{"./validateDOMNesting":315,"_process":1}],217:[function(require,module,exports){
 /**
  * Copyright 2014-present, Facebook, Inc.
  * All rights reserved.
@@ -23522,7 +32587,7 @@ _assign(ReactDOMEmptyComponent.prototype, {
 });
 
 module.exports = ReactDOMEmptyComponent;
-},{"./DOMLazyTree":67,"./ReactDOMComponentTree":101,"object-assign":227}],104:[function(require,module,exports){
+},{"./DOMLazyTree":181,"./ReactDOMComponentTree":215,"object-assign":341}],218:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -23695,7 +32760,7 @@ var ReactDOMFactories = {
 
 module.exports = ReactDOMFactories;
 }).call(this,require('_process'))
-},{"./ReactElement":119,"./ReactElementValidator":120,"_process":1}],105:[function(require,module,exports){
+},{"./ReactElement":233,"./ReactElementValidator":234,"_process":1}],219:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -23714,7 +32779,7 @@ var ReactDOMFeatureFlags = {
 };
 
 module.exports = ReactDOMFeatureFlags;
-},{}],106:[function(require,module,exports){
+},{}],220:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -23749,7 +32814,7 @@ var ReactDOMIDOperations = {
 };
 
 module.exports = ReactDOMIDOperations;
-},{"./DOMChildrenOperations":66,"./ReactDOMComponentTree":101}],107:[function(require,module,exports){
+},{"./DOMChildrenOperations":180,"./ReactDOMComponentTree":215}],221:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24021,7 +33086,7 @@ function _handleChange(event) {
 
 module.exports = ReactDOMInput;
 }).call(this,require('_process'))
-},{"./DOMPropertyOperations":70,"./DisabledInputUtils":73,"./LinkedValueUtils":83,"./ReactDOMComponentTree":101,"./ReactUpdates":151,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226,"object-assign":227}],108:[function(require,module,exports){
+},{"./DOMPropertyOperations":184,"./DisabledInputUtils":187,"./LinkedValueUtils":197,"./ReactDOMComponentTree":215,"./ReactUpdates":265,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340,"object-assign":341}],222:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24067,7 +33132,7 @@ var ReactDOMNullInputValuePropHook = {
 
 module.exports = ReactDOMNullInputValuePropHook;
 }).call(this,require('_process'))
-},{"./ReactComponentTreeHook":94,"_process":1,"fbjs/lib/warning":226}],109:[function(require,module,exports){
+},{"./ReactComponentTreeHook":208,"_process":1,"fbjs/lib/warning":340}],223:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24193,7 +33258,7 @@ var ReactDOMOption = {
 
 module.exports = ReactDOMOption;
 }).call(this,require('_process'))
-},{"./ReactChildren":88,"./ReactDOMComponentTree":101,"./ReactDOMSelect":110,"_process":1,"fbjs/lib/warning":226,"object-assign":227}],110:[function(require,module,exports){
+},{"./ReactChildren":202,"./ReactDOMComponentTree":215,"./ReactDOMSelect":224,"_process":1,"fbjs/lib/warning":340,"object-assign":341}],224:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24397,7 +33462,7 @@ function _handleChange(event) {
 
 module.exports = ReactDOMSelect;
 }).call(this,require('_process'))
-},{"./DisabledInputUtils":73,"./LinkedValueUtils":83,"./ReactDOMComponentTree":101,"./ReactUpdates":151,"_process":1,"fbjs/lib/warning":226,"object-assign":227}],111:[function(require,module,exports){
+},{"./DisabledInputUtils":187,"./LinkedValueUtils":197,"./ReactDOMComponentTree":215,"./ReactUpdates":265,"_process":1,"fbjs/lib/warning":340,"object-assign":341}],225:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -24610,7 +33675,7 @@ var ReactDOMSelection = {
 };
 
 module.exports = ReactDOMSelection;
-},{"./getNodeForCharacterOffset":187,"./getTextContentAccessor":188,"fbjs/lib/ExecutionEnvironment":203}],112:[function(require,module,exports){
+},{"./getNodeForCharacterOffset":301,"./getTextContentAccessor":302,"fbjs/lib/ExecutionEnvironment":317}],226:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24777,7 +33842,7 @@ _assign(ReactDOMTextComponent.prototype, {
 
 module.exports = ReactDOMTextComponent;
 }).call(this,require('_process'))
-},{"./DOMChildrenOperations":66,"./DOMLazyTree":67,"./ReactDOMComponentTree":101,"./escapeTextContentForBrowser":177,"./reactProdInvariant":195,"./validateDOMNesting":201,"_process":1,"fbjs/lib/invariant":217,"object-assign":227}],113:[function(require,module,exports){
+},{"./DOMChildrenOperations":180,"./DOMLazyTree":181,"./ReactDOMComponentTree":215,"./escapeTextContentForBrowser":291,"./reactProdInvariant":309,"./validateDOMNesting":315,"_process":1,"fbjs/lib/invariant":331,"object-assign":341}],227:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -24935,7 +34000,7 @@ function _handleChange(event) {
 
 module.exports = ReactDOMTextarea;
 }).call(this,require('_process'))
-},{"./DisabledInputUtils":73,"./LinkedValueUtils":83,"./ReactDOMComponentTree":101,"./ReactUpdates":151,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226,"object-assign":227}],114:[function(require,module,exports){
+},{"./DisabledInputUtils":187,"./LinkedValueUtils":197,"./ReactDOMComponentTree":215,"./ReactUpdates":265,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340,"object-assign":341}],228:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015-present, Facebook, Inc.
@@ -25074,7 +34139,7 @@ module.exports = {
   traverseEnterLeave: traverseEnterLeave
 };
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],115:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],229:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -25189,7 +34254,7 @@ var ReactDOMUnknownPropertyHook = {
 
 module.exports = ReactDOMUnknownPropertyHook;
 }).call(this,require('_process'))
-},{"./DOMProperty":69,"./EventPluginRegistry":77,"./ReactComponentTreeHook":94,"_process":1,"fbjs/lib/warning":226}],116:[function(require,module,exports){
+},{"./DOMProperty":183,"./EventPluginRegistry":191,"./ReactComponentTreeHook":208,"_process":1,"fbjs/lib/warning":340}],230:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2016-present, Facebook, Inc.
@@ -25493,7 +34558,7 @@ if (/[?&]react_perf\b/.test(url)) {
 
 module.exports = ReactDebugTool;
 }).call(this,require('_process'))
-},{"./ReactChildrenMutationWarningHook":89,"./ReactComponentTreeHook":94,"./ReactHostOperationHistoryHook":127,"./ReactInvalidSetStateWarningHook":132,"_process":1,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/performanceNow":224,"fbjs/lib/warning":226}],117:[function(require,module,exports){
+},{"./ReactChildrenMutationWarningHook":203,"./ReactComponentTreeHook":208,"./ReactHostOperationHistoryHook":241,"./ReactInvalidSetStateWarningHook":246,"_process":1,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/performanceNow":338,"fbjs/lib/warning":340}],231:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -25562,7 +34627,7 @@ var ReactDefaultBatchingStrategy = {
 };
 
 module.exports = ReactDefaultBatchingStrategy;
-},{"./ReactUpdates":151,"./Transaction":169,"fbjs/lib/emptyFunction":209,"object-assign":227}],118:[function(require,module,exports){
+},{"./ReactUpdates":265,"./Transaction":283,"fbjs/lib/emptyFunction":323,"object-assign":341}],232:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -25647,7 +34712,7 @@ function inject() {
 module.exports = {
   inject: inject
 };
-},{"./BeforeInputEventPlugin":61,"./ChangeEventPlugin":65,"./DefaultEventPluginOrder":72,"./EnterLeaveEventPlugin":74,"./HTMLDOMPropertyConfig":81,"./ReactComponentBrowserEnvironment":92,"./ReactDOMComponent":99,"./ReactDOMComponentTree":101,"./ReactDOMEmptyComponent":103,"./ReactDOMTextComponent":112,"./ReactDOMTreeTraversal":114,"./ReactDefaultBatchingStrategy":117,"./ReactEventListener":124,"./ReactInjection":128,"./ReactReconcileTransaction":145,"./SVGDOMPropertyConfig":153,"./SelectEventPlugin":154,"./SimpleEventPlugin":155}],119:[function(require,module,exports){
+},{"./BeforeInputEventPlugin":175,"./ChangeEventPlugin":179,"./DefaultEventPluginOrder":186,"./EnterLeaveEventPlugin":188,"./HTMLDOMPropertyConfig":195,"./ReactComponentBrowserEnvironment":206,"./ReactDOMComponent":213,"./ReactDOMComponentTree":215,"./ReactDOMEmptyComponent":217,"./ReactDOMTextComponent":226,"./ReactDOMTreeTraversal":228,"./ReactDefaultBatchingStrategy":231,"./ReactEventListener":238,"./ReactInjection":242,"./ReactReconcileTransaction":259,"./SVGDOMPropertyConfig":267,"./SelectEventPlugin":268,"./SimpleEventPlugin":269}],233:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -25998,7 +35063,7 @@ ReactElement.REACT_ELEMENT_TYPE = REACT_ELEMENT_TYPE;
 
 module.exports = ReactElement;
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":96,"./canDefineProperty":173,"_process":1,"fbjs/lib/warning":226,"object-assign":227}],120:[function(require,module,exports){
+},{"./ReactCurrentOwner":210,"./canDefineProperty":287,"_process":1,"fbjs/lib/warning":340,"object-assign":341}],234:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -26229,7 +35294,7 @@ var ReactElementValidator = {
 
 module.exports = ReactElementValidator;
 }).call(this,require('_process'))
-},{"./ReactComponentTreeHook":94,"./ReactCurrentOwner":96,"./ReactElement":119,"./ReactPropTypeLocations":141,"./canDefineProperty":173,"./checkReactTypeSpec":174,"./getIteratorFn":186,"_process":1,"fbjs/lib/warning":226}],121:[function(require,module,exports){
+},{"./ReactComponentTreeHook":208,"./ReactCurrentOwner":210,"./ReactElement":233,"./ReactPropTypeLocations":255,"./canDefineProperty":287,"./checkReactTypeSpec":288,"./getIteratorFn":300,"_process":1,"fbjs/lib/warning":340}],235:[function(require,module,exports){
 /**
  * Copyright 2014-present, Facebook, Inc.
  * All rights reserved.
@@ -26260,7 +35325,7 @@ var ReactEmptyComponent = {
 ReactEmptyComponent.injection = ReactEmptyComponentInjection;
 
 module.exports = ReactEmptyComponent;
-},{}],122:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -26339,7 +35404,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = ReactErrorUtils;
 }).call(this,require('_process'))
-},{"_process":1}],123:[function(require,module,exports){
+},{"_process":1}],237:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26373,7 +35438,7 @@ var ReactEventEmitterMixin = {
 };
 
 module.exports = ReactEventEmitterMixin;
-},{"./EventPluginHub":76}],124:[function(require,module,exports){
+},{"./EventPluginHub":190}],238:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26531,7 +35596,7 @@ var ReactEventListener = {
 };
 
 module.exports = ReactEventListener;
-},{"./PooledClass":84,"./ReactDOMComponentTree":101,"./ReactUpdates":151,"./getEventTarget":184,"fbjs/lib/EventListener":202,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/getUnboundedScrollPosition":214,"object-assign":227}],125:[function(require,module,exports){
+},{"./PooledClass":198,"./ReactDOMComponentTree":215,"./ReactUpdates":265,"./getEventTarget":298,"fbjs/lib/EventListener":316,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/getUnboundedScrollPosition":328,"object-assign":341}],239:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26554,7 +35619,7 @@ var ReactFeatureFlags = {
 };
 
 module.exports = ReactFeatureFlags;
-},{}],126:[function(require,module,exports){
+},{}],240:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -26633,7 +35698,7 @@ var ReactHostComponent = {
 
 module.exports = ReactHostComponent;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"object-assign":227}],127:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"object-assign":341}],241:[function(require,module,exports){
 /**
  * Copyright 2016-present, Facebook, Inc.
  * All rights reserved.
@@ -26671,7 +35736,7 @@ var ReactHostOperationHistoryHook = {
 };
 
 module.exports = ReactHostOperationHistoryHook;
-},{}],128:[function(require,module,exports){
+},{}],242:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26708,7 +35773,7 @@ var ReactInjection = {
 };
 
 module.exports = ReactInjection;
-},{"./DOMProperty":69,"./EventPluginHub":76,"./EventPluginUtils":78,"./ReactBrowserEventEmitter":86,"./ReactClass":90,"./ReactComponentEnvironment":93,"./ReactEmptyComponent":121,"./ReactHostComponent":126,"./ReactUpdates":151}],129:[function(require,module,exports){
+},{"./DOMProperty":183,"./EventPluginHub":190,"./EventPluginUtils":192,"./ReactBrowserEventEmitter":200,"./ReactClass":204,"./ReactComponentEnvironment":207,"./ReactEmptyComponent":235,"./ReactHostComponent":240,"./ReactUpdates":265}],243:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26833,7 +35898,7 @@ var ReactInputSelection = {
 };
 
 module.exports = ReactInputSelection;
-},{"./ReactDOMSelection":111,"fbjs/lib/containsNode":206,"fbjs/lib/focusNode":211,"fbjs/lib/getActiveElement":212}],130:[function(require,module,exports){
+},{"./ReactDOMSelection":225,"fbjs/lib/containsNode":320,"fbjs/lib/focusNode":325,"fbjs/lib/getActiveElement":326}],244:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26882,7 +35947,7 @@ var ReactInstanceMap = {
 };
 
 module.exports = ReactInstanceMap;
-},{}],131:[function(require,module,exports){
+},{}],245:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2016-present, Facebook, Inc.
@@ -26906,7 +35971,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = { debugTool: debugTool };
 }).call(this,require('_process'))
-},{"./ReactDebugTool":116,"_process":1}],132:[function(require,module,exports){
+},{"./ReactDebugTool":230,"_process":1}],246:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2016-present, Facebook, Inc.
@@ -26945,7 +36010,7 @@ var ReactInvalidSetStateWarningHook = {
 
 module.exports = ReactInvalidSetStateWarningHook;
 }).call(this,require('_process'))
-},{"_process":1,"fbjs/lib/warning":226}],133:[function(require,module,exports){
+},{"_process":1,"fbjs/lib/warning":340}],247:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -26996,7 +36061,7 @@ var ReactMarkupChecksum = {
 };
 
 module.exports = ReactMarkupChecksum;
-},{"./adler32":172}],134:[function(require,module,exports){
+},{"./adler32":286}],248:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -27533,7 +36598,7 @@ var ReactMount = {
 
 module.exports = ReactMount;
 }).call(this,require('_process'))
-},{"./DOMLazyTree":67,"./DOMProperty":69,"./ReactBrowserEventEmitter":86,"./ReactCurrentOwner":96,"./ReactDOMComponentTree":101,"./ReactDOMContainerInfo":102,"./ReactDOMFeatureFlags":105,"./ReactElement":119,"./ReactFeatureFlags":125,"./ReactInstanceMap":130,"./ReactInstrumentation":131,"./ReactMarkupChecksum":133,"./ReactReconciler":146,"./ReactUpdateQueue":150,"./ReactUpdates":151,"./instantiateReactComponent":190,"./reactProdInvariant":195,"./setInnerHTML":197,"./shouldUpdateReactComponent":199,"_process":1,"fbjs/lib/emptyObject":210,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],135:[function(require,module,exports){
+},{"./DOMLazyTree":181,"./DOMProperty":183,"./ReactBrowserEventEmitter":200,"./ReactCurrentOwner":210,"./ReactDOMComponentTree":215,"./ReactDOMContainerInfo":216,"./ReactDOMFeatureFlags":219,"./ReactElement":233,"./ReactFeatureFlags":239,"./ReactInstanceMap":244,"./ReactInstrumentation":245,"./ReactMarkupChecksum":247,"./ReactReconciler":260,"./ReactUpdateQueue":264,"./ReactUpdates":265,"./instantiateReactComponent":304,"./reactProdInvariant":309,"./setInnerHTML":311,"./shouldUpdateReactComponent":313,"_process":1,"fbjs/lib/emptyObject":324,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],249:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -27987,7 +37052,7 @@ var ReactMultiChild = {
 
 module.exports = ReactMultiChild;
 }).call(this,require('_process'))
-},{"./ReactChildReconciler":87,"./ReactComponentEnvironment":93,"./ReactCurrentOwner":96,"./ReactInstanceMap":130,"./ReactInstrumentation":131,"./ReactMultiChildUpdateTypes":136,"./ReactReconciler":146,"./flattenChildren":179,"./reactProdInvariant":195,"_process":1,"fbjs/lib/emptyFunction":209,"fbjs/lib/invariant":217}],136:[function(require,module,exports){
+},{"./ReactChildReconciler":201,"./ReactComponentEnvironment":207,"./ReactCurrentOwner":210,"./ReactInstanceMap":244,"./ReactInstrumentation":245,"./ReactMultiChildUpdateTypes":250,"./ReactReconciler":260,"./flattenChildren":293,"./reactProdInvariant":309,"_process":1,"fbjs/lib/emptyFunction":323,"fbjs/lib/invariant":331}],250:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -28020,7 +37085,7 @@ var ReactMultiChildUpdateTypes = keyMirror({
 });
 
 module.exports = ReactMultiChildUpdateTypes;
-},{"fbjs/lib/keyMirror":220}],137:[function(require,module,exports){
+},{"fbjs/lib/keyMirror":334}],251:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -28063,7 +37128,7 @@ var ReactNodeTypes = {
 
 module.exports = ReactNodeTypes;
 }).call(this,require('_process'))
-},{"./ReactElement":119,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],138:[function(require,module,exports){
+},{"./ReactElement":233,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],252:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015-present, Facebook, Inc.
@@ -28162,7 +37227,7 @@ var ReactNoopUpdateQueue = {
 
 module.exports = ReactNoopUpdateQueue;
 }).call(this,require('_process'))
-},{"_process":1,"fbjs/lib/warning":226}],139:[function(require,module,exports){
+},{"_process":1,"fbjs/lib/warning":340}],253:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -28259,7 +37324,7 @@ var ReactOwner = {
 
 module.exports = ReactOwner;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],140:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],254:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -28286,7 +37351,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = ReactPropTypeLocationNames;
 }).call(this,require('_process'))
-},{"_process":1}],141:[function(require,module,exports){
+},{"_process":1}],255:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -28309,7 +37374,7 @@ var ReactPropTypeLocations = keyMirror({
 });
 
 module.exports = ReactPropTypeLocations;
-},{"fbjs/lib/keyMirror":220}],142:[function(require,module,exports){
+},{"fbjs/lib/keyMirror":334}],256:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -28743,7 +37808,7 @@ function getClassName(propValue) {
 
 module.exports = ReactPropTypes;
 }).call(this,require('_process'))
-},{"./ReactElement":119,"./ReactPropTypeLocationNames":140,"./ReactPropTypesSecret":143,"./getIteratorFn":186,"_process":1,"fbjs/lib/emptyFunction":209,"fbjs/lib/warning":226}],143:[function(require,module,exports){
+},{"./ReactElement":233,"./ReactPropTypeLocationNames":254,"./ReactPropTypesSecret":257,"./getIteratorFn":300,"_process":1,"fbjs/lib/emptyFunction":323,"fbjs/lib/warning":340}],257:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -28760,7 +37825,7 @@ module.exports = ReactPropTypes;
 var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
-},{}],144:[function(require,module,exports){
+},{}],258:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -28803,7 +37868,7 @@ _assign(ReactPureComponent.prototype, ReactComponent.prototype);
 ReactPureComponent.prototype.isPureReactComponent = true;
 
 module.exports = ReactPureComponent;
-},{"./ReactComponent":91,"./ReactNoopUpdateQueue":138,"fbjs/lib/emptyObject":210,"object-assign":227}],145:[function(require,module,exports){
+},{"./ReactComponent":205,"./ReactNoopUpdateQueue":252,"fbjs/lib/emptyObject":324,"object-assign":341}],259:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -28984,7 +38049,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 
 module.exports = ReactReconcileTransaction;
 }).call(this,require('_process'))
-},{"./CallbackQueue":64,"./PooledClass":84,"./ReactBrowserEventEmitter":86,"./ReactInputSelection":129,"./ReactInstrumentation":131,"./ReactUpdateQueue":150,"./Transaction":169,"_process":1,"object-assign":227}],146:[function(require,module,exports){
+},{"./CallbackQueue":178,"./PooledClass":198,"./ReactBrowserEventEmitter":200,"./ReactInputSelection":243,"./ReactInstrumentation":245,"./ReactUpdateQueue":264,"./Transaction":283,"_process":1,"object-assign":341}],260:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -29155,7 +38220,7 @@ var ReactReconciler = {
 
 module.exports = ReactReconciler;
 }).call(this,require('_process'))
-},{"./ReactInstrumentation":131,"./ReactRef":147,"_process":1,"fbjs/lib/warning":226}],147:[function(require,module,exports){
+},{"./ReactInstrumentation":245,"./ReactRef":261,"_process":1,"fbjs/lib/warning":340}],261:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -29236,7 +38301,7 @@ ReactRef.detachRefs = function (instance, element) {
 };
 
 module.exports = ReactRef;
-},{"./ReactOwner":139}],148:[function(require,module,exports){
+},{"./ReactOwner":253}],262:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -29329,7 +38394,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 
 module.exports = ReactServerRenderingTransaction;
 }).call(this,require('_process'))
-},{"./PooledClass":84,"./ReactInstrumentation":131,"./ReactServerUpdateQueue":149,"./Transaction":169,"_process":1,"object-assign":227}],149:[function(require,module,exports){
+},{"./PooledClass":198,"./ReactInstrumentation":245,"./ReactServerUpdateQueue":263,"./Transaction":283,"_process":1,"object-assign":341}],263:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015-present, Facebook, Inc.
@@ -29473,7 +38538,7 @@ var ReactServerUpdateQueue = function () {
 
 module.exports = ReactServerUpdateQueue;
 }).call(this,require('_process'))
-},{"./ReactUpdateQueue":150,"./Transaction":169,"_process":1,"fbjs/lib/warning":226}],150:[function(require,module,exports){
+},{"./ReactUpdateQueue":264,"./Transaction":283,"_process":1,"fbjs/lib/warning":340}],264:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015-present, Facebook, Inc.
@@ -29702,7 +38767,7 @@ var ReactUpdateQueue = {
 
 module.exports = ReactUpdateQueue;
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":96,"./ReactInstanceMap":130,"./ReactInstrumentation":131,"./ReactUpdates":151,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],151:[function(require,module,exports){
+},{"./ReactCurrentOwner":210,"./ReactInstanceMap":244,"./ReactInstrumentation":245,"./ReactUpdates":265,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],265:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -29956,7 +39021,7 @@ var ReactUpdates = {
 
 module.exports = ReactUpdates;
 }).call(this,require('_process'))
-},{"./CallbackQueue":64,"./PooledClass":84,"./ReactFeatureFlags":125,"./ReactReconciler":146,"./Transaction":169,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"object-assign":227}],152:[function(require,module,exports){
+},{"./CallbackQueue":178,"./PooledClass":198,"./ReactFeatureFlags":239,"./ReactReconciler":260,"./Transaction":283,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"object-assign":341}],266:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -29971,7 +39036,7 @@ module.exports = ReactUpdates;
 'use strict';
 
 module.exports = '15.3.2';
-},{}],153:[function(require,module,exports){
+},{}],267:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -30274,7 +39339,7 @@ Object.keys(ATTRS).forEach(function (key) {
 });
 
 module.exports = SVGDOMPropertyConfig;
-},{}],154:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -30471,7 +39536,7 @@ var SelectEventPlugin = {
 };
 
 module.exports = SelectEventPlugin;
-},{"./EventConstants":75,"./EventPropagators":79,"./ReactDOMComponentTree":101,"./ReactInputSelection":129,"./SyntheticEvent":160,"./isTextInputElement":192,"fbjs/lib/ExecutionEnvironment":203,"fbjs/lib/getActiveElement":212,"fbjs/lib/keyOf":221,"fbjs/lib/shallowEqual":225}],155:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPropagators":193,"./ReactDOMComponentTree":215,"./ReactInputSelection":243,"./SyntheticEvent":274,"./isTextInputElement":306,"fbjs/lib/ExecutionEnvironment":317,"fbjs/lib/getActiveElement":326,"fbjs/lib/keyOf":335,"fbjs/lib/shallowEqual":339}],269:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -31109,7 +40174,7 @@ var SimpleEventPlugin = {
 
 module.exports = SimpleEventPlugin;
 }).call(this,require('_process'))
-},{"./EventConstants":75,"./EventPropagators":79,"./ReactDOMComponentTree":101,"./SyntheticAnimationEvent":156,"./SyntheticClipboardEvent":157,"./SyntheticDragEvent":159,"./SyntheticEvent":160,"./SyntheticFocusEvent":161,"./SyntheticKeyboardEvent":163,"./SyntheticMouseEvent":164,"./SyntheticTouchEvent":165,"./SyntheticTransitionEvent":166,"./SyntheticUIEvent":167,"./SyntheticWheelEvent":168,"./getEventCharCode":181,"./reactProdInvariant":195,"_process":1,"fbjs/lib/EventListener":202,"fbjs/lib/emptyFunction":209,"fbjs/lib/invariant":217,"fbjs/lib/keyOf":221}],156:[function(require,module,exports){
+},{"./EventConstants":189,"./EventPropagators":193,"./ReactDOMComponentTree":215,"./SyntheticAnimationEvent":270,"./SyntheticClipboardEvent":271,"./SyntheticDragEvent":273,"./SyntheticEvent":274,"./SyntheticFocusEvent":275,"./SyntheticKeyboardEvent":277,"./SyntheticMouseEvent":278,"./SyntheticTouchEvent":279,"./SyntheticTransitionEvent":280,"./SyntheticUIEvent":281,"./SyntheticWheelEvent":282,"./getEventCharCode":295,"./reactProdInvariant":309,"_process":1,"fbjs/lib/EventListener":316,"fbjs/lib/emptyFunction":323,"fbjs/lib/invariant":331,"fbjs/lib/keyOf":335}],270:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31149,7 +40214,7 @@ function SyntheticAnimationEvent(dispatchConfig, dispatchMarker, nativeEvent, na
 SyntheticEvent.augmentClass(SyntheticAnimationEvent, AnimationEventInterface);
 
 module.exports = SyntheticAnimationEvent;
-},{"./SyntheticEvent":160}],157:[function(require,module,exports){
+},{"./SyntheticEvent":274}],271:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31188,7 +40253,7 @@ function SyntheticClipboardEvent(dispatchConfig, dispatchMarker, nativeEvent, na
 SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 
 module.exports = SyntheticClipboardEvent;
-},{"./SyntheticEvent":160}],158:[function(require,module,exports){
+},{"./SyntheticEvent":274}],272:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31225,7 +40290,7 @@ function SyntheticCompositionEvent(dispatchConfig, dispatchMarker, nativeEvent, 
 SyntheticEvent.augmentClass(SyntheticCompositionEvent, CompositionEventInterface);
 
 module.exports = SyntheticCompositionEvent;
-},{"./SyntheticEvent":160}],159:[function(require,module,exports){
+},{"./SyntheticEvent":274}],273:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31262,7 +40327,7 @@ function SyntheticDragEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeE
 SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 
 module.exports = SyntheticDragEvent;
-},{"./SyntheticMouseEvent":164}],160:[function(require,module,exports){
+},{"./SyntheticMouseEvent":278}],274:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -31533,7 +40598,7 @@ function getPooledWarningPropertyDefinition(propName, getVal) {
   }
 }
 }).call(this,require('_process'))
-},{"./PooledClass":84,"_process":1,"fbjs/lib/emptyFunction":209,"fbjs/lib/warning":226,"object-assign":227}],161:[function(require,module,exports){
+},{"./PooledClass":198,"_process":1,"fbjs/lib/emptyFunction":323,"fbjs/lib/warning":340,"object-assign":341}],275:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31570,7 +40635,7 @@ function SyntheticFocusEvent(dispatchConfig, dispatchMarker, nativeEvent, native
 SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 
 module.exports = SyntheticFocusEvent;
-},{"./SyntheticUIEvent":167}],162:[function(require,module,exports){
+},{"./SyntheticUIEvent":281}],276:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31608,7 +40673,7 @@ function SyntheticInputEvent(dispatchConfig, dispatchMarker, nativeEvent, native
 SyntheticEvent.augmentClass(SyntheticInputEvent, InputEventInterface);
 
 module.exports = SyntheticInputEvent;
-},{"./SyntheticEvent":160}],163:[function(require,module,exports){
+},{"./SyntheticEvent":274}],277:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31693,7 +40758,7 @@ function SyntheticKeyboardEvent(dispatchConfig, dispatchMarker, nativeEvent, nat
 SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 
 module.exports = SyntheticKeyboardEvent;
-},{"./SyntheticUIEvent":167,"./getEventCharCode":181,"./getEventKey":182,"./getEventModifierState":183}],164:[function(require,module,exports){
+},{"./SyntheticUIEvent":281,"./getEventCharCode":295,"./getEventKey":296,"./getEventModifierState":297}],278:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31766,7 +40831,7 @@ function SyntheticMouseEvent(dispatchConfig, dispatchMarker, nativeEvent, native
 SyntheticUIEvent.augmentClass(SyntheticMouseEvent, MouseEventInterface);
 
 module.exports = SyntheticMouseEvent;
-},{"./SyntheticUIEvent":167,"./ViewportMetrics":170,"./getEventModifierState":183}],165:[function(require,module,exports){
+},{"./SyntheticUIEvent":281,"./ViewportMetrics":284,"./getEventModifierState":297}],279:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31812,7 +40877,7 @@ function SyntheticTouchEvent(dispatchConfig, dispatchMarker, nativeEvent, native
 SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 
 module.exports = SyntheticTouchEvent;
-},{"./SyntheticUIEvent":167,"./getEventModifierState":183}],166:[function(require,module,exports){
+},{"./SyntheticUIEvent":281,"./getEventModifierState":297}],280:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31852,7 +40917,7 @@ function SyntheticTransitionEvent(dispatchConfig, dispatchMarker, nativeEvent, n
 SyntheticEvent.augmentClass(SyntheticTransitionEvent, TransitionEventInterface);
 
 module.exports = SyntheticTransitionEvent;
-},{"./SyntheticEvent":160}],167:[function(require,module,exports){
+},{"./SyntheticEvent":274}],281:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31912,7 +40977,7 @@ function SyntheticUIEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEve
 SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
 
 module.exports = SyntheticUIEvent;
-},{"./SyntheticEvent":160,"./getEventTarget":184}],168:[function(require,module,exports){
+},{"./SyntheticEvent":274,"./getEventTarget":298}],282:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -31967,7 +41032,7 @@ function SyntheticWheelEvent(dispatchConfig, dispatchMarker, nativeEvent, native
 SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 
 module.exports = SyntheticWheelEvent;
-},{"./SyntheticMouseEvent":164}],169:[function(require,module,exports){
+},{"./SyntheticMouseEvent":278}],283:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32203,7 +41268,7 @@ var Transaction = {
 
 module.exports = Transaction;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],170:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],284:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -32231,7 +41296,7 @@ var ViewportMetrics = {
 };
 
 module.exports = ViewportMetrics;
-},{}],171:[function(require,module,exports){
+},{}],285:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-present, Facebook, Inc.
@@ -32292,7 +41357,7 @@ function accumulateInto(current, next) {
 
 module.exports = accumulateInto;
 }).call(this,require('_process'))
-},{"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],172:[function(require,module,exports){
+},{"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],286:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -32337,7 +41402,7 @@ function adler32(data) {
 }
 
 module.exports = adler32;
-},{}],173:[function(require,module,exports){
+},{}],287:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32364,7 +41429,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = canDefineProperty;
 }).call(this,require('_process'))
-},{"_process":1}],174:[function(require,module,exports){
+},{"_process":1}],288:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32454,7 +41519,7 @@ function checkReactTypeSpec(typeSpecs, values, location, componentName, element,
 
 module.exports = checkReactTypeSpec;
 }).call(this,require('_process'))
-},{"./ReactComponentTreeHook":94,"./ReactPropTypeLocationNames":140,"./ReactPropTypesSecret":143,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],175:[function(require,module,exports){
+},{"./ReactComponentTreeHook":208,"./ReactPropTypeLocationNames":254,"./ReactPropTypesSecret":257,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],289:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -32487,7 +41552,7 @@ var createMicrosoftUnsafeLocalFunction = function (func) {
 };
 
 module.exports = createMicrosoftUnsafeLocalFunction;
-},{}],176:[function(require,module,exports){
+},{}],290:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32569,7 +41634,7 @@ function dangerousStyleValue(name, value, component) {
 
 module.exports = dangerousStyleValue;
 }).call(this,require('_process'))
-},{"./CSSProperty":62,"_process":1,"fbjs/lib/warning":226}],177:[function(require,module,exports){
+},{"./CSSProperty":176,"_process":1,"fbjs/lib/warning":340}],291:[function(require,module,exports){
 /**
  * Copyright 2016-present, Facebook, Inc.
  * All rights reserved.
@@ -32693,7 +41758,7 @@ function escapeTextContentForBrowser(text) {
 }
 
 module.exports = escapeTextContentForBrowser;
-},{}],178:[function(require,module,exports){
+},{}],292:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32756,7 +41821,7 @@ function findDOMNode(componentOrElement) {
 
 module.exports = findDOMNode;
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":96,"./ReactDOMComponentTree":101,"./ReactInstanceMap":130,"./getHostComponentFromComposite":185,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],179:[function(require,module,exports){
+},{"./ReactCurrentOwner":210,"./ReactDOMComponentTree":215,"./ReactInstanceMap":244,"./getHostComponentFromComposite":299,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],293:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -32835,7 +41900,7 @@ function flattenChildren(children, selfDebugID) {
 
 module.exports = flattenChildren;
 }).call(this,require('_process'))
-},{"./KeyEscapeUtils":82,"./ReactComponentTreeHook":94,"./traverseAllChildren":200,"_process":1,"fbjs/lib/warning":226}],180:[function(require,module,exports){
+},{"./KeyEscapeUtils":196,"./ReactComponentTreeHook":208,"./traverseAllChildren":314,"_process":1,"fbjs/lib/warning":340}],294:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -32867,7 +41932,7 @@ function forEachAccumulated(arr, cb, scope) {
 }
 
 module.exports = forEachAccumulated;
-},{}],181:[function(require,module,exports){
+},{}],295:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -32918,7 +41983,7 @@ function getEventCharCode(nativeEvent) {
 }
 
 module.exports = getEventCharCode;
-},{}],182:[function(require,module,exports){
+},{}],296:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33021,7 +42086,7 @@ function getEventKey(nativeEvent) {
 }
 
 module.exports = getEventKey;
-},{"./getEventCharCode":181}],183:[function(require,module,exports){
+},{"./getEventCharCode":295}],297:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33065,7 +42130,7 @@ function getEventModifierState(nativeEvent) {
 }
 
 module.exports = getEventModifierState;
-},{}],184:[function(require,module,exports){
+},{}],298:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33101,7 +42166,7 @@ function getEventTarget(nativeEvent) {
 }
 
 module.exports = getEventTarget;
-},{}],185:[function(require,module,exports){
+},{}],299:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33132,7 +42197,7 @@ function getHostComponentFromComposite(inst) {
 }
 
 module.exports = getHostComponentFromComposite;
-},{"./ReactNodeTypes":137}],186:[function(require,module,exports){
+},{"./ReactNodeTypes":251}],300:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33174,7 +42239,7 @@ function getIteratorFn(maybeIterable) {
 }
 
 module.exports = getIteratorFn;
-},{}],187:[function(require,module,exports){
+},{}],301:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33249,7 +42314,7 @@ function getNodeForCharacterOffset(root, offset) {
 }
 
 module.exports = getNodeForCharacterOffset;
-},{}],188:[function(require,module,exports){
+},{}],302:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33283,7 +42348,7 @@ function getTextContentAccessor() {
 }
 
 module.exports = getTextContentAccessor;
-},{"fbjs/lib/ExecutionEnvironment":203}],189:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":317}],303:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33385,7 +42450,7 @@ function getVendorPrefixedEventName(eventName) {
 }
 
 module.exports = getVendorPrefixedEventName;
-},{"fbjs/lib/ExecutionEnvironment":203}],190:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":317}],304:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -33507,7 +42572,7 @@ function instantiateReactComponent(node, shouldHaveDebugID) {
 
 module.exports = instantiateReactComponent;
 }).call(this,require('_process'))
-},{"./ReactCompositeComponent":95,"./ReactEmptyComponent":121,"./ReactHostComponent":126,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226,"object-assign":227}],191:[function(require,module,exports){
+},{"./ReactCompositeComponent":209,"./ReactEmptyComponent":235,"./ReactHostComponent":240,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340,"object-assign":341}],305:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33568,7 +42633,7 @@ function isEventSupported(eventNameSuffix, capture) {
 }
 
 module.exports = isEventSupported;
-},{"fbjs/lib/ExecutionEnvironment":203}],192:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":317}],306:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33620,7 +42685,7 @@ function isTextInputElement(elem) {
 }
 
 module.exports = isTextInputElement;
-},{}],193:[function(require,module,exports){
+},{}],307:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -33661,7 +42726,7 @@ function onlyChild(children) {
 
 module.exports = onlyChild;
 }).call(this,require('_process'))
-},{"./ReactElement":119,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217}],194:[function(require,module,exports){
+},{"./ReactElement":233,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331}],308:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33688,7 +42753,7 @@ function quoteAttributeValueForBrowser(value) {
 }
 
 module.exports = quoteAttributeValueForBrowser;
-},{"./escapeTextContentForBrowser":177}],195:[function(require,module,exports){
+},{"./escapeTextContentForBrowser":291}],309:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33728,7 +42793,7 @@ function reactProdInvariant(code) {
 }
 
 module.exports = reactProdInvariant;
-},{}],196:[function(require,module,exports){
+},{}],310:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33745,7 +42810,7 @@ module.exports = reactProdInvariant;
 var ReactMount = require('./ReactMount');
 
 module.exports = ReactMount.renderSubtreeIntoContainer;
-},{"./ReactMount":134}],197:[function(require,module,exports){
+},{"./ReactMount":248}],311:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33844,7 +42909,7 @@ if (ExecutionEnvironment.canUseDOM) {
 }
 
 module.exports = setInnerHTML;
-},{"./DOMNamespaces":68,"./createMicrosoftUnsafeLocalFunction":175,"fbjs/lib/ExecutionEnvironment":203}],198:[function(require,module,exports){
+},{"./DOMNamespaces":182,"./createMicrosoftUnsafeLocalFunction":289,"fbjs/lib/ExecutionEnvironment":317}],312:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33893,7 +42958,7 @@ if (ExecutionEnvironment.canUseDOM) {
 }
 
 module.exports = setTextContent;
-},{"./escapeTextContentForBrowser":177,"./setInnerHTML":197,"fbjs/lib/ExecutionEnvironment":203}],199:[function(require,module,exports){
+},{"./escapeTextContentForBrowser":291,"./setInnerHTML":311,"fbjs/lib/ExecutionEnvironment":317}],313:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -33936,7 +43001,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
 }
 
 module.exports = shouldUpdateReactComponent;
-},{}],200:[function(require,module,exports){
+},{}],314:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-present, Facebook, Inc.
@@ -34106,7 +43171,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 
 module.exports = traverseAllChildren;
 }).call(this,require('_process'))
-},{"./KeyEscapeUtils":82,"./ReactCurrentOwner":96,"./ReactElement":119,"./getIteratorFn":186,"./reactProdInvariant":195,"_process":1,"fbjs/lib/invariant":217,"fbjs/lib/warning":226}],201:[function(require,module,exports){
+},{"./KeyEscapeUtils":196,"./ReactCurrentOwner":210,"./ReactElement":233,"./getIteratorFn":300,"./reactProdInvariant":309,"_process":1,"fbjs/lib/invariant":331,"fbjs/lib/warning":340}],315:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015-present, Facebook, Inc.
@@ -34491,7 +43556,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = validateDOMNesting;
 }).call(this,require('_process'))
-},{"_process":1,"fbjs/lib/emptyFunction":209,"fbjs/lib/warning":226,"object-assign":227}],202:[function(require,module,exports){
+},{"_process":1,"fbjs/lib/emptyFunction":323,"fbjs/lib/warning":340,"object-assign":341}],316:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -34577,7 +43642,7 @@ var EventListener = {
 
 module.exports = EventListener;
 }).call(this,require('_process'))
-},{"./emptyFunction":209,"_process":1}],203:[function(require,module,exports){
+},{"./emptyFunction":323,"_process":1}],317:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -34613,7 +43678,7 @@ var ExecutionEnvironment = {
 };
 
 module.exports = ExecutionEnvironment;
-},{}],204:[function(require,module,exports){
+},{}],318:[function(require,module,exports){
 "use strict";
 
 /**
@@ -34645,7 +43710,7 @@ function camelize(string) {
 }
 
 module.exports = camelize;
-},{}],205:[function(require,module,exports){
+},{}],319:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -34685,7 +43750,7 @@ function camelizeStyleName(string) {
 }
 
 module.exports = camelizeStyleName;
-},{"./camelize":204}],206:[function(require,module,exports){
+},{"./camelize":318}],320:[function(require,module,exports){
 'use strict';
 
 /**
@@ -34725,7 +43790,7 @@ function containsNode(outerNode, innerNode) {
 }
 
 module.exports = containsNode;
-},{"./isTextNode":219}],207:[function(require,module,exports){
+},{"./isTextNode":333}],321:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -34854,7 +43919,7 @@ function createArrayFromMixed(obj) {
 
 module.exports = createArrayFromMixed;
 }).call(this,require('_process'))
-},{"./invariant":217,"_process":1}],208:[function(require,module,exports){
+},{"./invariant":331,"_process":1}],322:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -34940,7 +44005,7 @@ function createNodesFromMarkup(markup, handleScript) {
 
 module.exports = createNodesFromMarkup;
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":203,"./createArrayFromMixed":207,"./getMarkupWrap":213,"./invariant":217,"_process":1}],209:[function(require,module,exports){
+},{"./ExecutionEnvironment":317,"./createArrayFromMixed":321,"./getMarkupWrap":327,"./invariant":331,"_process":1}],323:[function(require,module,exports){
 "use strict";
 
 /**
@@ -34979,7 +44044,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 };
 
 module.exports = emptyFunction;
-},{}],210:[function(require,module,exports){
+},{}],324:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -35001,7 +44066,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = emptyObject;
 }).call(this,require('_process'))
-},{"_process":1}],211:[function(require,module,exports){
+},{"_process":1}],325:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35028,7 +44093,7 @@ function focusNode(node) {
 }
 
 module.exports = focusNode;
-},{}],212:[function(require,module,exports){
+},{}],326:[function(require,module,exports){
 'use strict';
 
 /**
@@ -35063,7 +44128,7 @@ function getActiveElement() /*?DOMElement*/{
 }
 
 module.exports = getActiveElement;
-},{}],213:[function(require,module,exports){
+},{}],327:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -35160,7 +44225,7 @@ function getMarkupWrap(nodeName) {
 
 module.exports = getMarkupWrap;
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":203,"./invariant":217,"_process":1}],214:[function(require,module,exports){
+},{"./ExecutionEnvironment":317,"./invariant":331,"_process":1}],328:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35199,7 +44264,7 @@ function getUnboundedScrollPosition(scrollable) {
 }
 
 module.exports = getUnboundedScrollPosition;
-},{}],215:[function(require,module,exports){
+},{}],329:[function(require,module,exports){
 'use strict';
 
 /**
@@ -35232,7 +44297,7 @@ function hyphenate(string) {
 }
 
 module.exports = hyphenate;
-},{}],216:[function(require,module,exports){
+},{}],330:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35271,7 +44336,7 @@ function hyphenateStyleName(string) {
 }
 
 module.exports = hyphenateStyleName;
-},{"./hyphenate":215}],217:[function(require,module,exports){
+},{"./hyphenate":329}],331:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -35323,7 +44388,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 }).call(this,require('_process'))
-},{"_process":1}],218:[function(require,module,exports){
+},{"_process":1}],332:[function(require,module,exports){
 'use strict';
 
 /**
@@ -35346,7 +44411,7 @@ function isNode(object) {
 }
 
 module.exports = isNode;
-},{}],219:[function(require,module,exports){
+},{}],333:[function(require,module,exports){
 'use strict';
 
 /**
@@ -35371,7 +44436,7 @@ function isTextNode(object) {
 }
 
 module.exports = isTextNode;
-},{"./isNode":218}],220:[function(require,module,exports){
+},{"./isNode":332}],334:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -35421,7 +44486,7 @@ var keyMirror = function keyMirror(obj) {
 
 module.exports = keyMirror;
 }).call(this,require('_process'))
-},{"./invariant":217,"_process":1}],221:[function(require,module,exports){
+},{"./invariant":331,"_process":1}],335:[function(require,module,exports){
 "use strict";
 
 /**
@@ -35456,7 +44521,7 @@ var keyOf = function keyOf(oneKeyObj) {
 };
 
 module.exports = keyOf;
-},{}],222:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35486,7 +44551,7 @@ function memoizeStringOnly(callback) {
 }
 
 module.exports = memoizeStringOnly;
-},{}],223:[function(require,module,exports){
+},{}],337:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35509,7 +44574,7 @@ if (ExecutionEnvironment.canUseDOM) {
 }
 
 module.exports = performance || {};
-},{"./ExecutionEnvironment":203}],224:[function(require,module,exports){
+},{"./ExecutionEnvironment":317}],338:[function(require,module,exports){
 'use strict';
 
 /**
@@ -35543,7 +44608,7 @@ if (performance.now) {
 }
 
 module.exports = performanceNow;
-},{"./performance":223}],225:[function(require,module,exports){
+},{"./performance":337}],339:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35611,7 +44676,7 @@ function shallowEqual(objA, objB) {
 }
 
 module.exports = shallowEqual;
-},{}],226:[function(require,module,exports){
+},{}],340:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -35680,14 +44745,14 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = warning;
 }).call(this,require('_process'))
-},{"./emptyFunction":209,"_process":1}],227:[function(require,module,exports){
-arguments[4][55][0].apply(exports,arguments)
-},{"dup":55}],228:[function(require,module,exports){
+},{"./emptyFunction":323,"_process":1}],341:[function(require,module,exports){
+arguments[4][169][0].apply(exports,arguments)
+},{"dup":169}],342:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib/React');
 
-},{"./lib/React":85}],229:[function(require,module,exports){
+},{"./lib/React":199}],343:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -35729,24 +44794,9 @@ var About = React.createClass({displayName: "About",
 
 module.exports = About;
 
-},{"react":228}],230:[function(require,module,exports){
+},{"react":342}],344:[function(require,module,exports){
 var React = require('react');
 var Header = require('./common/header');
-
-//$ = jQuery = require('jquery');
-
-// var App = React.createClass({
-// 	render: function() {
-// 		return (
-// 			<div>
-				
-// 				<div className="container-fluid">
-// 					<RouteHandler/>
-// 				</div>
-// 			</div>
-// 		);
-// 	}
-// });
 
 var App = React.createClass({displayName: "App",
   render: function() {
@@ -35763,7 +44813,7 @@ var App = React.createClass({displayName: "App",
 
 module.exports = App;
 
-},{"./common/header":231,"react":228}],231:[function(require,module,exports){
+},{"./common/header":345,"react":342}],345:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -35779,7 +44829,7 @@ var Header = React.createClass({displayName: "Header",
                 React.createElement("img", {src: "../images/pluralsight-logo.png"})
               ), 
               React.createElement("ul", {className: "nav navbar-nav"}, 
-                React.createElement("li", null, React.createElement(Link, {to: "/"}, "Home")), 
+                React.createElement("li", null, React.createElement(Link, {to: "/"}, React.createElement("i", {className: "fa fa-home"}), "Home")), 
                 React.createElement("li", null, React.createElement(Link, {to: "about"}, "About"))
               )
           )
@@ -35789,17 +44839,20 @@ var Header = React.createClass({displayName: "Header",
 });
 
 module.exports = Header;
-},{"react":228,"react-router":30}],232:[function(require,module,exports){
+},{"react":342,"react-router":144}],346:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
-
+var Button = require('react-desktop/windows').Button;
 var Home = React.createClass({displayName: "Home",
 	render: function() {
 		return (
 			React.createElement("div", {className: "jumbotron"}, 
 				React.createElement("h1", null, "Hi Administration"), 
-				React.createElement("p", null, "this is cool, React Router, and Flux for ultra-responsive web apps.")
+				React.createElement("p", null, "this is cool and nice, React Router, and Flux for ultra-responsive web apps."), 
+				 React.createElement(Button, {push: true, color: "#cc7f29", onClick: () => console.log('Clicked!')}, 
+					"Press me!"
+				)
 			)
 		);
 	}
@@ -35807,7 +44860,7 @@ var Home = React.createClass({displayName: "Home",
 
 module.exports = Home;
 
-},{"react":228}],233:[function(require,module,exports){
+},{"react":342,"react-desktop/windows":116}],347:[function(require,module,exports){
 $ = jQuery = require('jquery');
 var React = require('react');
 var ReactDOM = require('react-dom');
@@ -35834,4 +44887,4 @@ React.createElement(Router, {history: hashHistory},
 
 ), document.getElementById('app'));
 
-},{"./components/about/aboutPage":229,"./components/app":230,"./components/homePage":232,"jquery":2,"react":228,"react-dom":3,"react-router":30}]},{},[233]);
+},{"./components/about/aboutPage":343,"./components/app":344,"./components/homePage":346,"jquery":2,"react":342,"react-dom":117,"react-router":144}]},{},[347]);
